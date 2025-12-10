@@ -65,3 +65,4 @@ bun + sqlite 记录抽奖序号
 - [ ] Gas report
 - [ ] `package.json` scripts
 - [ ] 编写测试
+- [ ] env.example

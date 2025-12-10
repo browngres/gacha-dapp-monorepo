@@ -1,5 +1,9 @@
-import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
-import { configVariable, defineConfig } from "hardhat/config";
+import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers"
+import { defineConfig } from "hardhat/config"
+import dotenv from "dotenv"
+dotenv.config({ path: "../../.env" })
+
+const { GANACHE_RPC_MAIN, GANACHE_RPC_TEST } = process.env
 
 export default defineConfig({
   plugins: [hardhatToolboxMochaEthersPlugin],
@@ -20,19 +24,19 @@ export default defineConfig({
     },
   },
   networks: {
-    hardhatMainnet: {
+    hardhat: {
       type: "edr-simulated",
       chainType: "l1",
     },
-    hardhatOp: {
-      type: "edr-simulated",
-      chainType: "op",
-    },
-    sepolia: {
+    ganache_main: {
       type: "http",
       chainType: "l1",
-      url: configVariable("SEPOLIA_RPC_URL"),
-      accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+      url: GANACHE_RPC_MAIN!,
+    },
+    ganache_test: {
+      type: "http",
+      chainType: "l1",
+      url: GANACHE_RPC_TEST!,
     },
   },
-});
+})
