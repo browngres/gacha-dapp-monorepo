@@ -21,8 +21,12 @@
 
 ### 随机数 feed
 
-用一个单独的合约，使用一个脚本往链上写入值。
+使用 Chainlink VRF V2.5 的 mock 版本。使用一个脚本定时向链上 feed 随机数。
 由于向合约写入的随机数任何人都能看到，所以只能用于测试环境。
+
+> 备注： 由于不想安装 `@chainlink/contracts` 代理一大堆依赖以及版本冲突。使用 remix 将 mock 合约展平。
+> `@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol`
+> 为减小文件大小，去除了跟 mock 无关的所有注释
 
 生产环境应该使用 ChainLink VRF
 

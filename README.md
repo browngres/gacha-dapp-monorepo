@@ -18,6 +18,8 @@
 - 信标代理
 - Merkle Tree 校验数据存在性
 - 在合约调用其他合约
+- Chainlink VRF
+- 在开发测试中 Mock 合约
 - 枚举
 
 ### 仓库架构
@@ -30,3 +32,9 @@
 
 - [Bun Workspaces](https://bun.com/docs/pm/workspaces)
 - [WTF Solidity 极简入门: 36. 默克尔树 Merkle Tree](https://github.com/AmazingAng/WTF-Solidity/blob/main/36_MerkleTree/readme.md)
+
+#### VRF
+
+- [RandomNumberConsumer test](https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/test/unit/RandomNumberConsumer.spec.js)
+- [Chainlink VRF 2.5 Local testing using a mock subscription contract](https://docs.chain.link/vrf/v2-5/subscription/test-locally)
+- [hardhat-starter-kit](https://github.com/smartcontractkit/hardhat-starter-kit/tree/hardhat-3)

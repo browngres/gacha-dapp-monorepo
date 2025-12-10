@@ -1,7 +1,7 @@
 import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers"
 import { defineConfig } from "hardhat/config"
 import dotenv from "dotenv"
-dotenv.config({ path: "../../.env" })
+dotenv.config()
 
 const { GANACHE_RPC_MAIN, GANACHE_RPC_TEST } = process.env
 
