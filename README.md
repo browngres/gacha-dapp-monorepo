@@ -6,23 +6,19 @@
 
 ### 项目特色
 
--   bun (Runtime + Package Manager + Bundler)
--   monorepo
--   rainbowkit
--   react + tailwind + daisyui
--   hardhat 3
+- bun (Runtime + Package Manager + Bundler)
+- monorepo
+- rainbowkit
+- react + tailwind + daisyui
+- hardhat 3
 
 ### 重点学习
 
--   dapp 前后端
--   信标代理
--   Merkle Tree 校验数据存在性
--   在合约调用其他合约
--   枚举
-
-### 待定功能
-
--   NFT
+- dapp 前后端
+- 信标代理
+- Merkle Tree 校验数据存在性
+- 在合约调用其他合约
+- 枚举
 
 ### 仓库架构
 
@@ -32,4 +28,5 @@
 
 ### 参考资料
 
--   [WTF Solidity 极简入门: 36. 默克尔树 Merkle Tree](https://github.com/AmazingAng/WTF-Solidity/blob/main/36_MerkleTree/readme.md)
+- [Bun Workspaces](https://bun.com/docs/pm/workspaces)
+- [WTF Solidity 极简入门: 36. 默克尔树 Merkle Tree](https://github.com/AmazingAng/WTF-Solidity/blob/main/36_MerkleTree/readme.md)

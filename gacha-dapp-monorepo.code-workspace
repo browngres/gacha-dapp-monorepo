@@ -1,14 +1,12 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"cSpell.words": [
-			"gacha",
-			"Merkle",
-			"rainbowkit"
-		]
-	}
+  "folders": [
+    {
+      "path": ".",
+    },
+  ],
+  "settings": {
+    "cSpell.words": ["gacha", "Merkle", "rainbowkit"],
+    "prettier.tabWidth": 2,
+    "editor.formatOnSave": false,
+  },
 }

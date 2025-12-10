@@ -1,0 +1,15 @@
+{
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": false,
+  "singleQuote": true,
+  "jsxSingleQuote": true,
+  "overrides": [
+    {
+      "files": ["*.ts", "*.js"],
+      "options": {
+        "printWidth": 120
+      }
+    }
+  ]
+}
