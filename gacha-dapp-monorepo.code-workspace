@@ -5,7 +5,12 @@
     },
   ],
   "settings": {
-    "cSpell.words": ["gacha", "Merkle", "rainbowkit"],
+    "cSpell.words": [
+      "gacha",
+      "keccak",
+      "Merkle",
+      "rainbowkit"
+    ],
     "prettier.tabWidth": 2,
     "editor.formatOnSave": false,
   },
