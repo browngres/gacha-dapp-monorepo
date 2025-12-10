@@ -21,6 +21,16 @@ export default defineConfig({
           },
         },
       },
+      ganache:{
+        version: "0.8.28",
+        settings: {
+          evmVersion: "london",
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      }
     },
   },
   networks: {

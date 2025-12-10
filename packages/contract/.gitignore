@@ -25,3 +25,6 @@
 .env.test.local
 .env.production.local
 .env.local
+
+# hardhat ignition deployments
+/ignition/deployments
