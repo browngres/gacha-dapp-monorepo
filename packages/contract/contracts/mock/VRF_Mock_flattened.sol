@@ -1,4 +1,5 @@
-// This file flatten: chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol
+/// @notice This file flatten: chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol
+/// @notice Edited VRFConsumerBaseV2Plus to VRFConsumerBaseV2PlusUpgradeable
 
 // SPDX-License-Identifier: MIT
 
@@ -874,6 +875,135 @@ abstract contract VRFConsumerBaseV2Plus is IVRFMigratableConsumerV2Plus, Confirm
   }
 }
 
+
+// File: OpenZeppelin Contracts (last updated v5.3.0) (proxy/utils/Initializable.sol)
+
+pragma solidity ^0.8.20;
+
+abstract contract Initializable {
+    struct InitializableStorage {
+        uint64 _initialized;
+        bool _initializing;
+    }
+
+    // keccak256(abi.encode(uint256(keccak256("openzeppelin.storage.Initializable")) - 1)) & ~bytes32(uint256(0xff))
+    bytes32 private constant INITIALIZABLE_STORAGE =
+        0xf0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00;
+
+    error InvalidInitialization();
+    error NotInitializing();
+    event Initialized(uint64 version);
+
+    modifier initializer() {
+        InitializableStorage storage $ = _getInitializableStorage();
+        bool isTopLevelCall = !$._initializing;
+        uint64 initialized = $._initialized;
+        bool initialSetup = initialized == 0 && isTopLevelCall;
+        bool construction = initialized == 1 && address(this).code.length == 0;
+
+        if (!initialSetup && !construction) {
+            revert InvalidInitialization();
+        }
+        $._initialized = 1;
+        if (isTopLevelCall) {
+            $._initializing = true;
+        }
+        _;
+        if (isTopLevelCall) {
+            $._initializing = false;
+            emit Initialized(1);
+        }
+    }
+
+    modifier reinitializer(uint64 version) {
+        // solhint-disable-next-line var-name-mixedcase
+        InitializableStorage storage $ = _getInitializableStorage();
+
+        if ($._initializing || $._initialized >= version) {
+            revert InvalidInitialization();
+        }
+        $._initialized = version;
+        $._initializing = true;
+        _;
+        $._initializing = false;
+        emit Initialized(version);
+    }
+
+    modifier onlyInitializing() {
+        _checkInitializing();
+        _;
+    }
+
+    function _checkInitializing() internal view virtual {
+        if (!_isInitializing()) {
+            revert NotInitializing();
+        }
+    }
+
+    function _disableInitializers() internal virtual {
+        // solhint-disable-next-line var-name-mixedcase
+        InitializableStorage storage $ = _getInitializableStorage();
+
+        if ($._initializing) {
+            revert InvalidInitialization();
+        }
+        if ($._initialized != type(uint64).max) {
+            $._initialized = type(uint64).max;
+            emit Initialized(type(uint64).max);
+        }
+    }
+
+    function _getInitializedVersion() internal view returns (uint64) {
+        return _getInitializableStorage()._initialized;
+    }
+
+    function _isInitializing() internal view returns (bool) {
+        return _getInitializableStorage()._initializing;
+    }
+
+    function _initializableStorageSlot()
+        internal
+        pure
+        virtual
+        returns (bytes32)
+    {
+        return INITIALIZABLE_STORAGE;
+    }
+
+    function _getInitializableStorage()
+        private
+        pure
+        returns (InitializableStorage storage $)
+    {
+        bytes32 slot = _initializableStorageSlot();
+        assembly {
+            $.slot := slot
+        }
+    }
+}
+
+// File: VRFConsumerBaseV2PlusUpgradeable.sol
+
+abstract contract VRFConsumerBaseV2PlusUpgradeable is Initializable {
+    error OnlyCoordinatorCanFulfill(address have, address want);
+    address private vrfCoordinator;
+
+    function __VRFConsumerBaseV2Upgradeable_init(address _vrfCoordinator) internal onlyInitializing {
+        vrfCoordinator = _vrfCoordinator;
+    }
+
+    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal virtual;
+
+    function rawFulfillRandomWords(uint256 requestId, uint256[] memory randomWords) external {
+        if (msg.sender != vrfCoordinator) {
+            revert OnlyCoordinatorCanFulfill(msg.sender, vrfCoordinator);
+        }
+        fulfillRandomWords(requestId, randomWords);
+    }
+
+}
+
+
 // File: @chainlink/contracts@1.5.0/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol
 
 // A mock for testing code that relies on VRFCoordinatorV2_5.
@@ -1000,7 +1130,7 @@ contract VRFCoordinatorV2_5Mock is SubscriptionAPI, IVRFCoordinatorV2Plus {
       revert InvalidRandomWords();
     }
 
-    VRFConsumerBaseV2Plus v;
+    VRFConsumerBaseV2PlusUpgradeable v;
     bytes memory callReq = abi.encodeWithSelector(v.rawFulfillRandomWords.selector, _requestId, _words);
     s_config.reentrancyLock = true;
     // solhint-disable-next-line avoid-low-level-calls, no-unused-vars

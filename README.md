@@ -23,6 +23,7 @@
 - 在合约调用其他合约
 - Chainlink VRF
 - 在开发测试中 Mock 合约
+- 不可升级合约的 initializer 改造
 - 可枚举的集合(EnumerableSet)
 - create2 ，由合约创建合约
 - access control roles

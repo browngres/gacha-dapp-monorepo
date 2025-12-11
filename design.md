@@ -128,3 +128,7 @@ hardhat 3 / ignition 文档中零碎的合约写法。基本上是用到什么�
 存储槽设置 参考了 0G AgentNFT 合约存储布局
 
 [智能合约 - NFT盲盒](https://blog.csdn.net/wcc19840827/article/details/146998758)
+
+VRF 可升级改造
+[Chainlink 可升级改造](https://github.com/smartcontractkit/chainlink/issues/4976)
+[How to implement Chainlink VRFv2 with Upgradeable Transparent Proxy smart contract?](https://ethereum.stackexchange.com/questions/161819/how-to-implement-chainlink-vrfv2-with-upgradeable-transparent-proxy-smart-contra)
