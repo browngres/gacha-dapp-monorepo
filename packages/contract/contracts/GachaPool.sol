@@ -11,6 +11,7 @@ import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Pau
 /// @notice 这是开发环境的 Mock 合约，生产环境需更换导入路径
 import {VRFConsumerBaseV2PlusUpgradeable} from "./mock/VRF_Mock_flattened.sol";
 import {VRFV2PlusClient} from "./mock/VRF_Mock_flattened.sol";
+import {IVRFCoordinatorV2Plus} from "./mock/VRF_Mock_flattened.sol";
 
 // 枚举类型
 import {EnumerableSetLib} from "solady/src/utils/EnumerableSetLib.sol";
@@ -19,8 +20,7 @@ import {EnumerableSetLib} from "solady/src/utils/EnumerableSetLib.sol";
 备忘： whenNotPaused, whenPaused, nonReentrant
 */
 
-contract GachaPool is Initializable, PausableUpgradeable, AccessControlUpgradeable, VRFConsumerBaseV2PlusUpgradeable {
-// contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumerBaseV2PlusUpgradeable {
+contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumerBaseV2PlusUpgradeable {
     // * 类型声明
     /// @dev 稀有度
     enum Rarity {
@@ -46,11 +46,11 @@ contract GachaPool is Initializable, PausableUpgradeable, AccessControlUpgradeab
     bytes32 private constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
     // ** VRF 相关
-    uint256 immutable subId; // subscriptionId
-    bytes32 immutable keyHash;
+    uint256 subId; // subscriptionId
+    bytes32 keyHash;
     uint32 constant CALLBACK_GAS_LIMIT = 100_000;
     uint16 constant REQUEST_CONFIRMATIONS = 1;
-    IVRFCoordinatorV2Plus COORDINATOR;  // VRF coordinator
+    IVRFCoordinatorV2Plus COORDINATOR; // VRF coordinator
 
     // ** Gacha 相关
     mapping(Rarity => uint8) public percentages; // 稀有度概率
@@ -95,7 +95,17 @@ contract GachaPool is Initializable, PausableUpgradeable, AccessControlUpgradeab
         }
     }
 
-    }
+    /// 分配稀有度
+    // function getRandomRarity() internal returns (Rarity) {
+    // }
+
+    /// 单抽
+    // TODO
+    // function gachaOne() returns () {}
+
+    /// 十连
+    // TODO
+    // function gachaTen() returns () {}
 
     function pause() public onlyRole(PAUSER_ROLE) {
         _pause();
@@ -103,5 +113,26 @@ contract GachaPool is Initializable, PausableUpgradeable, AccessControlUpgradeab
 
     function unpause() public onlyRole(PAUSER_ROLE) {
         _unpause();
+    }
+
+    event RandomFulfilled(uint256[] randomWords);
+
+    function requestRandomWords() external {
+        // Will revert if subscription is not set and funded.
+        //     s_requestId = s_vrfCoordinator.requestRandomWords(
+        //         VRFV2PlusClient.RandomWordsRequest({
+        //             keyHash: s_keyHash,
+        //             subId: s_subscriptionId,
+        //             requestConfirmations: REQUEST_CONFIRMATIONS,
+        //             callbackGasLimit: CALLBACK_GAS_LIMIT,
+        //             numWords: NUM_WORDS,
+        //             extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+        //         })
+        //     );
+    }
+
+    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
+        // s_randomWords = randomWords;
+        // emit ReturnedRandomness(randomWords);
     }
 }
