@@ -1,5 +1,7 @@
 // This file flatten: chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol
 
+// SPDX-License-Identifier: MIT
+
 // File: @chainlink/contracts@1.5.0/src/v0.8/shared/interfaces/IOwnable.sol
 
 pragma solidity ^0.8.0;
@@ -1098,9 +1100,6 @@ contract VRFCoordinatorV2_5Mock is SubscriptionAPI, IVRFCoordinatorV2Plus {
     return requestId;
   }
 
-  /**
-   * @inheritdoc IVRFSubscriptionV2Plus
-   */
   function removeConsumer(
     uint256 _subId,
     address _consumer
@@ -1122,9 +1121,6 @@ contract VRFCoordinatorV2_5Mock is SubscriptionAPI, IVRFCoordinatorV2Plus {
     emit SubscriptionConsumerRemoved(_subId, _consumer);
   }
 
-  /**
-   * @inheritdoc IVRFSubscriptionV2Plus
-   */
   function cancelSubscription(uint256 _subId, address _to) external override onlySubOwner(_subId) nonReentrant {
     (uint96 balance, uint96 nativeBalance) = _deleteSubscription(_subId);
 
