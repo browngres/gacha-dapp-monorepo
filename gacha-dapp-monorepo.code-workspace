@@ -11,7 +11,8 @@
       "gacha",
       "keccak",
       "Merkle",
-      "rainbowkit"
+      "rainbowkit",
+      "solady"
     ],
     "prettier.tabWidth": 2,
     "editor.formatOnSave": false,

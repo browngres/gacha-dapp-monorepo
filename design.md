@@ -42,26 +42,31 @@
 
 ### Scheme
 
-稀有度枚举
+**枚举**
 
-稀有度概率：
-映射 稀有度 到 uint8
+- 稀有度
 
-抽卡记录： 地址到 reqId 数组
-mapping(address => uint256[]) private s_results;
+**映射**
 
-结果记录
-抽取结果： reqId 到 请求结果结构体
-mapping(uint256 => address) private rollers;
+- 稀有度概率： 稀有度 到 uint8
+- 抽卡人记录(rollers)： reqId 到 地址
+- 抽卡记录： 地址 到 reqId 数组
+- 随机数请求记录： reqId 到 随机数请求结构体
 
-抽卡人记录 reqId 到 地址
-mapping(uint256 => address) private rollers;
+**枚举集合**
 
-请求结果结构体：reqId，fulfilled，随机数个数，随机数数组，抽奖结果数组（枚举）
+- 进行中的抽奖（等待随机数中）
+- 已完成的抽奖
+- 所有玩家
+- 特权地址
 
-抽卡结果：一个两位数。`00-99`
+**结构体**
 
-抽卡码`keccak256(地址.pool编号.round编号.reqId)`
+- 随机数请求 ：reqId，随机数个数，随机数数组，枚举稀有度结果
+
+**其他**
+
+- 抽卡码`keccak256(地址.pool编号.round编号.reqId)`，发出请求后返回
 
 ### 安全考虑
 
@@ -76,6 +81,7 @@ bun + sqlite 记录抽奖序号
 
 - NFT
 - 卡池管理合约，用于创建卡池（创建信标代理）。使用合约工厂部署合约。查看状态，批量暂停。
+  - salt 就用 `keccak256("Gacha.GachaPool.<PoolId>")`
 - 保底
 
 ## TODO
@@ -94,6 +100,7 @@ bun + sqlite 记录抽奖序号
 
 - [ ] transient 重入锁
 - [ ] 给合约代码添加 NatSpec 注释
+- [ ] 按照风格指南整理合约代码
 
 ### dev todo
 
@@ -104,3 +111,13 @@ bun + sqlite 记录抽奖序号
 - [ ] `package.json` scripts
 - [ ] 编写测试
 - [ ] env.example
+
+## 参考合约
+
+hardhat 3 / ignition 文档中零碎的合约写法。基本上是用到什么查什么，之前的学习过程中已经不断地、翻来覆去地看 hardhat 3 文档。
+
+信标代理参考 openzeppelin 文章, 结合 hardhat 3 ignition 的 Upgradeable Contracts 部署方法。
+
+合约部署合约 参考了 0G 验证者管理合约。
+
+存储槽设置 参考了 0G AgentNFT 合约存储布局
