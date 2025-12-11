@@ -9,11 +9,13 @@
       "Chainlink",
       "dotenv",
       "gacha",
+      "Initializable",
       "keccak",
       "Merkle",
       "rainbowkit",
       "Reentrancy",
-      "solady"
+      "solady",
+      "VRFV"
     ],
     "prettier.tabWidth": 2,
     "editor.formatOnSave": false,

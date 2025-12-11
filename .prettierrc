@@ -10,6 +10,13 @@
       "options": {
         "printWidth": 120
       }
+    },
+    {
+      "files": ["*.sol"],
+      "options": {
+        "tabWidth": 4,
+        "printWidth": 120
+      }
     }
   ]
 }

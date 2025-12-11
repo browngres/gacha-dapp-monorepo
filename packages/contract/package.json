@@ -15,6 +15,7 @@
     "forge-std": "foundry-rs/forge-std#v1.9.4",
     "hardhat": "^3.0.17",
     "mocha": "^11.0.0",
+    "solady": "^0.1.26",
     "typescript": "~5.8.0"
   },
   "scripts": {

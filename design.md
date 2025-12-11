@@ -66,6 +66,7 @@
 
 **其他**
 
+- create2 salt `keccak256("Gacha.GachaPool.<PoolId>")`
 - 抽卡码`keccak256(地址.pool编号.round编号.reqId)`，发出请求后返回
 
 ### 安全考虑
@@ -81,7 +82,6 @@ bun + sqlite 记录抽奖序号
 
 - NFT
 - 卡池管理合约，用于创建卡池（创建信标代理）。使用合约工厂部署合约。查看状态，批量暂停。
-  - salt 就用 `keccak256("Gacha.GachaPool.<PoolId>")`
 - 特权用户（roles 实现）
   - 免费抽
   - 打折抽
