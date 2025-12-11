@@ -21,7 +21,7 @@ export default defineConfig({
           },
         },
       },
-      ganache:{
+      ganache: {
         version: "0.8.28",
         settings: {
           evmVersion: "london",
@@ -30,8 +30,12 @@ export default defineConfig({
             runs: 200,
           },
         },
-      }
+      },
     },
+    npmFilesToBuild: [
+      "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol",
+      "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol",
+    ],
   },
   networks: {
     hardhat: {

@@ -2,7 +2,7 @@ import { network } from "hardhat"
 const { ethers } = await network.connect()
 
 async function main() {
-  // 部署
+  // 加载合约
   const consumer = await ethers.getContractAt("RandomConsumer", "0xF682a44E6a46865F92803A3c7710AA78e9E9bD02")
   const vrf = await ethers.getContractAt("VRFCoordinatorV2_5Mock", "0x76bdD8D6c93D0d41fEf61bf43760fCC592A06366")
   await consumer.requestRandomWords()
