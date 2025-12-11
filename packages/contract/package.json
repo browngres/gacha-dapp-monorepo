@@ -6,6 +6,8 @@
     "@nomicfoundation/hardhat-ethers": "^4.0.2",
     "@nomicfoundation/hardhat-ignition": "^3.0.6",
     "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.2",
+    "@openzeppelin/contracts": "^5.4.0",
+    "@openzeppelin/contracts-upgradeable": "^5.4.0",
     "@types/chai": "^4.2.0",
     "@types/chai-as-promised": "^8.0.1",
     "@types/mocha": ">=10.0.10",
@@ -20,6 +22,6 @@
   },
   "scripts": {
     "ignition:vrf": "bunx hardhat ignition deploy ./ignition/modules/VRF.ts --network 'ganache_test' --deployment-id 'VRF-on-ganache_test' --build-profile 'ganache'",
-    "clean": "bunx hardhat clean",
+    "clean": "bunx hardhat clean"
   }
 }
