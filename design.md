@@ -62,7 +62,7 @@
 
 **结构体**
 
-- 随机数请求 ：reqId，随机数个数，随机数数组，枚举稀有度结果
+- 随机数请求 ：随机数个数，随机数数组，稀有度结果
 
 **其他**
 
@@ -105,13 +105,15 @@ bun + sqlite 记录抽奖序号
 - [ ] 给合约代码添加 NatSpec 注释
 - [ ] 按照风格指南整理合约代码
 - [ ] 检查修饰符(role, pause, reentrance)
+- Gas 优化
+  - [ ] Gas report
+  - [ ] 存储槽优化
 
 ### dev todo
 
 - [x] 安装 rainbowkit
 - [x] prettier
 - [ ] 将流程转换为流程图
-- [ ] Gas report
 - [ ] `package.json` scripts
 - [ ] env.example
 

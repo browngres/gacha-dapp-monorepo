@@ -23,8 +23,9 @@
 - 在合约调用其他合约
 - Chainlink VRF
 - 在开发测试中 Mock 合约
-- 枚举
+- 可枚举的集合(EnumerableSet)
 - create2 ，由合约创建合约
+- transient storage (ReentrancyGuardTransient) （仅兼容 Cancun 升级之后的 EVM）
 
 ### 仓库架构
 

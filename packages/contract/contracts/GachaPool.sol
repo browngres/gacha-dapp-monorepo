@@ -6,9 +6,13 @@ import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.s
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
-// VRF
+// Chainlink VRF
+/// @notice 这是开发环境的 Mock 合约，生产环境需更换导入路径
 import {VRFConsumerBaseV2Plus} from "./mock/VRF_Mock_flattened.sol";
 import {VRFV2PlusClient} from "./mock/VRF_Mock_flattened.sol";
+
+// 枚举类型
+import {EnumerableSetLib} from "./solady/src/utils/EnumerableSetLib.sol";
 
 /*
 备忘： whenNotPaused, whenPaused, nonReentrant
@@ -20,10 +24,32 @@ contract GachaPool is
     AccessControlUpgradeable,
     VRFConsumerBaseV2Plus
 {
-    // 类型声明
+    // * 类型声明
+    /// @dev 稀有度
+    enum Rarity {
+        UR,
+        SSR,
+        SR,
+        R,
+        N
+    }
+    struct RandomResults {
+        uint8 numWords;
+        uint256[] words;
+        uint8[] rarity;
+    }
 
-    // 状态变量
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    using EnumerableSet for EnumerableSet.UintSet;
+
+    // * 状态变量
+    // ** 访问控制相关
+    bytes32 private constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    // ** VRF 相关
+    uint256 immutable subId;
+    bytes32 immutable keyHash;
+    uint32 constant CALLBACK_GAS_LIMIT = 100_000;
+    uint16 constant REQUEST_CONFIRMATIONS = 1;
+
     // TODO 特权地址
 
 

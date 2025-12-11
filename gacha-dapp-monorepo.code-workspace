@@ -12,6 +12,7 @@
       "keccak",
       "Merkle",
       "rainbowkit",
+      "Reentrancy",
       "solady"
     ],
     "prettier.tabWidth": 2,
