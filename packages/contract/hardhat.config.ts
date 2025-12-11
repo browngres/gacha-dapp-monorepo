@@ -1,7 +1,14 @@
 import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers"
 import { defineConfig } from "hardhat/config"
 import dotenv from "dotenv"
-dotenv.config()
+
+// 指定绝对路径，防止不同位置找不到 .env，比如 solidity 插件只会在根目录
+import { fileURLToPath } from 'url';
+import { dirname,resolve } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: resolve(__dirname, ".env") })
+
 
 const { GANACHE_RPC_MAIN, GANACHE_RPC_TEST } = process.env
 
