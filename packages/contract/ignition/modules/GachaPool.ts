@@ -1,6 +1,6 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules"
 import VRFModule from "./VRF.js"
-import { parseEther } from "ethers"
+import { parseEther, parseUnits } from "ethers"
 
 // beacon 代理方式部署
 // 1. Deploy implementation
@@ -14,7 +14,7 @@ export const proxyGachaPoolModule = buildModule("ProxyGachaPoolModule", (m) => {
 
   // 存款并订阅
   // mock 版本的合约订阅不需要付款，是 nonpayable，可以任意 fundAmount
-  const fundAmount = parseEther("666") // 存入 666 link
+  const fundAmount = parseEther("100") // 存入 100 link
   const subscription = m.call(VRFMock, "createSubscription")
   const subId = m.readEventArgument(subscription, "SubscriptionCreated", "subId")
   m.call(VRFMock, "fundSubscription", [subId, fundAmount])
@@ -28,7 +28,17 @@ export const proxyGachaPoolModule = buildModule("ProxyGachaPoolModule", (m) => {
   // 准备参数
   const keyHash = "0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc" // 随意，mock 中没用
   const percentages: number[] = [2, 8, 10, 20, 60]
-  const initCallData = m.encodeFunctionCall(gachaPool, "initialize", [subId, VRFMock, keyHash, deployer, percentages])
+  const initCallData = m.encodeFunctionCall(gachaPool, "initialize", [
+    subId,
+    VRFMock,
+    keyHash,
+    deployer,
+    1, // poolId
+    100, // supply
+    parseUnits("0.1", "gwei"), // 单次费用 0.1 ether，转换为 gwei
+    deployer, // signer
+    percentages, // 概率
+  ])
 
   // 部署 proxy
   const proxy = m.contract("BeaconProxy", [beacon, initCallData], { from: deployer })
