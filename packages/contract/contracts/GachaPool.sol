@@ -39,7 +39,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     struct RandomResult {
         uint8 numWords;
         uint256[] words;
-        uint8[] rarity;
+        Rarity[] rarity;
     }
 
     using EnumerableSetLib for EnumerableSetLib.Uint256Set;
@@ -65,6 +65,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     uint128 __gap1; // 预留槽位
     address public claimSigner; // claim 签名者
     uint32 constant PROCESSING_CAP = 100; // 未结算的请求数量限制
+
     // ** Gacha 运行相关
     mapping(Rarity => uint8) public percentages; // 稀有度概率
     mapping(uint256 reqId => address roller) reqToAddress; // 抽卡的地址
@@ -128,6 +129,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     /// 单抽
     function gachaOne() public payable returns (bytes32) {
+        // TODO 检查付款
         uint256 requestId = _requestRandomWords(1);
         reqToAddress[requestId] = msg.sender;
         addressToReq[msg.sender].push(requestId);
@@ -203,8 +205,8 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         RandomResult memory result;
         result.numWords = uint8(randomWords.length);
         result.words = randomWords;
-        // TODO 计算 rarity
-        result.rarity = new uint8[](1);
+        // 计算 rarity
+        result.rarity = getRandomRarity(randomWords);
         requests[requestId] = result;
         emit RandomFulfilled(requestId, randomWords);
     }
@@ -230,14 +232,20 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     }
 
     /// @notice 计算稀有度
-    /// @dev 避免比较次数过多，应该让概率最大的比较次数最少
-    function getRandomRarity(uint256[] calldata randomWords) private returns (Rarity[] memory rarity) {
+    /// @param randomWords 给定随机数，数组
+    /// @return rarity 随机数的稀有度，数组
+    /// @dev 从后往前遍历（N->R->SR->SSR->UR），概率大的先判断
+    function getRandomRarity(uint256[] calldata randomWords) private view returns (Rarity[] memory rarity) {
         uint256 length = randomWords.length;
         for (uint i = 0; i < length; i++) {
-            uint8 word =  uint8(randomWords[0] % 100 + 1);  // 1-100
-            // TODO 计算稀有度
-
+            uint8 word = uint8((randomWords[0] % 100) + 1); // 1-100
+            uint8 cumulative = 0;
+            for (uint8 j = 5; j > 0; j--) {
+                cumulative += percentages[Rarity(j - 1)];
+                if (word <= cumulative) {
+                    rarity[i] = Rarity(j - 1);
+                }
+            }
         }
-
     }
 }
