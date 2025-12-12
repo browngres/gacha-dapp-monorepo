@@ -3,6 +3,7 @@ import { network } from "hardhat"
 import { deployGachaPoolFixture } from "./DeployFixture.js"
 import { parseUnits } from "ethers"
 import type { GachaPool, UpgradeableBeacon } from "../types/ethers-contracts/index.js"
+import gachaPoolModule from "../ignition/modules/GachaPool.js"
 
 describe("GachaPool Percentage Unit Tests", function () {
   it("Should successfully initialized with Fixture given percentage config", async function () {
@@ -86,16 +87,18 @@ describe("GachaPool Percentage Unit Tests", function () {
 
     it("Only admin can set", async function () {
       // 必须有 admin role
-      const { ethers, networkHelpers } = await network.connect()
-      const { proxy: gacha } = await networkHelpers.loadFixture(deployGachaPoolFixture)
-      await gacha.pause()
-      const notAdmin = (await ethers.getSigners())[2]
-      // TODO 不会 revert
-      // await expect(await gacha.connect(notAdmin).setPercentage([20, 20, 20, 20, 20])).to.be.revertedWithCustomError(
-      //   gacha,
-      //   "AccessControlUnauthorizedAccount",
-      // )
-      await expect(gacha.connect(notAdmin).setPercentage([20, 20, 20, 20, 20])).to.be.revert(ethers)
+      const { ethers, ignition } = await network.connect()
+      const { proxy: _gacha } = await ignition.deploy(gachaPoolModule)
+      // ! 天知道这个 fixture 害我找 bug 找多久。bug 位于 git commit `8a9a3ded` 。 还是 ignition 好！
+      // const { proxy: gacha } = await networkHelpers.loadFixture(deployGachaPoolFixture)
+      const gachaPoll = await ethers.getContractAt("GachaPool", _gacha.target)
+      await gachaPoll.pause()
+      // 使用非 admin 账户
+      const notAdmin = (await ethers.getSigners())[1]
+      await expect(gachaPoll.connect(notAdmin).setPercentage([20, 20, 20, 20, 20])).to.be.revertedWithCustomError(
+        gachaPoll,
+        "AccessControlUnauthorizedAccount",
+      )
     })
 
     it("Should set correctly", async function () {
