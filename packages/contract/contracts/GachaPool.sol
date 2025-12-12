@@ -47,6 +47,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     // * 【 状态变量 】
     // ** 访问控制相关
+    bytes32 private constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 private constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
     // ** VRF 相关
@@ -62,25 +63,32 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     uint32 public supply; // 总量，最大抽卡次数
     uint64 public costGwei; // 抽卡费用，单位 Gwei
     uint128 __gap1; // 预留槽位
-    address public ClaimSigner; // claim 签名者
+    address public claimSigner; // claim 签名者
+    uint32 constant PROCESSING_CAP = 100; // 未结算的请求数量限制
     // ** Gacha 运行相关
     mapping(Rarity => uint8) public percentages; // 稀有度概率
     mapping(uint256 reqId => address roller) reqToAddress; // 抽卡的地址
-    mapping(address roller => uint256[] requests) addressToReq; // 地址的抽卡记录
+    mapping(address roller => uint256[] requestIds) addressToReq; // 地址的抽卡记录
     mapping(uint256 reqId => RandomResult) requests; // 所有结果记录
     EnumerableSetLib.Uint256Set processingRequests; // 正在进行的 Request，reqId 集合
     EnumerableSetLib.Uint256Set fulfilledRequests; // 已经满足的 Request，reqId 集合
     EnumerableSetLib.Uint256Set claimedRequests; // 已经领取奖励的 Request，reqId 集合
     EnumerableSetLib.AddressSet allPlayers; // 所有玩过的玩家，地址集合
+    // TODO 特权地址
 
     // * 【 自定义错误 】
     error InvalidRarityPercentage();
 
-    // TODO 特权地址
+    // * 【 自定义事件 】
+    event GachaOne(address indexed who, uint256 requestId);
+    event GachaTen(address indexed who, uint256 requestId);
+    event RandomRequested(uint256 indexed requestId);
+    event RandomFulfilled(uint256 indexed requestId, uint256[] randomWords);
+    event PercentageChanged();
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
-        // 防止攻击者绕过代理直接调用实现合约的初始化
+        /// @dev 防止攻击者绕过代理直接调用实现合约的初始化
         _disableInitializers();
     }
 
@@ -93,12 +101,13 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         uint32 _supply,
         uint64 _costGwei,
         address _signer,
-        uint8[] memory _percentages
+        uint8[] calldata _percentages
     ) public initializer {
         // * 访问控制
         __Pausable_init();
         __AccessControl_init();
         _grantRole(DEFAULT_ADMIN_ROLE, _admin);
+        _grantRole(ADMIN_ROLE, _admin);
         _grantRole(PAUSER_ROLE, _admin);
         // * VRF
         subId = _subId;
@@ -109,28 +118,24 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         poolId = _poolId;
         supply = _supply;
         costGwei = _costGwei;
-        ClaimSigner = _signer;
+        claimSigner = _signer;
 
-        // TODO 分配概率
-        if (_percentages.length != 5) {
-            // TODO 检查概率加一起等于 100
-            revert InvalidRarityPercentage();
-        }
+        // 分配概率
+        _setPercentage(_percentages);
     }
 
-    /// 分配稀有度
-    // function getRandomRarity() internal returns (Rarity) {
-    /// @dev 避免比较次数过多，应该让概率最大的比较次数最少
-    // }
+    // * 【 public 函数】
 
     /// 单抽
-    event GachaOne(address indexed who, uint256 requestId);
-    event GachaTen(address indexed who, uint256 requestId);
-
-    function gachaOne() public returns (bytes32) {
+    function gachaOne() public payable returns (bytes32) {
         uint256 requestId = _requestRandomWords(1);
+        reqToAddress[requestId] = msg.sender;
+        addressToReq[msg.sender].push(requestId);
+        /// @dev 更新请求的状态为：处理中
+        processingRequests.add(requestId, PROCESSING_CAP);
+        /// @dev 集合添加会自动去重
+        allPlayers.add(msg.sender);
         emit GachaOne(msg.sender, requestId);
-        // TODO 抽卡记录
         // TODO 兑换码构造
         bytes32 code = keccak256("gacha");
         return code;
@@ -138,10 +143,15 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     /// 十连
     /// @notice 十连抽，费用打折
-    // TODO
     // function gachaTen() returns () {}
 
+    /// 兑奖
+    // function claim() returns () {}
+
+    // * 【 admin 函数】
+
     function pause() public onlyRole(PAUSER_ROLE) {
+        // TODO 如果有正在请求的随机数，不能暂停
         _pause();
     }
 
@@ -149,8 +159,21 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         _unpause();
     }
 
-    event RandomRequested(uint256 indexed requestId);
-    event RandomFulfilled(uint256 indexed requestId, uint256[] randomWords);
+    /// @notice 设置概率
+    /// @dev 合约必须处于暂停
+    function setPercentage(uint8[] calldata _percentages) public onlyRole(ADMIN_ROLE) whenPaused {
+        _setPercentage(_percentages);
+    }
+
+    /// 设置费用，必须先暂停
+    // function setCostGwei() onlyRole(ADMIN_ROLE) returns () {}
+
+    /// 提取余额
+    // function withdraw() onlyRole(ADMIN_ROLE) returns () {}
+
+    // * 【 view 函数】
+
+    // * 【 internal/private 函数】
 
     function _requestRandomWords(uint8 numWords) private returns (uint256) {
         /// @dev Will revert if subscription is not set and funded.
@@ -168,12 +191,53 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         return requestId;
     }
 
+    /// @notice 被 VRF 调用，写入随机数的地方
+    /// @param requestId requestId
+    /// @param randomWords randomWords from vrf
+    /// @dev never use revert in fulfillRandomWords
     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
-        /// @dev never use revert in fulfillRandomWords
-        // console.log("requestId: ", requestId);
-        // console.log("Got randomWords: ", randomWords[0]);
-        // s_randomWords = randomWords;
-        // TODO 请求结果记录
+        // 更新请求的状态为：已满足。
+        processingRequests.remove(requestId);
+        fulfilledRequests.add(requestId);
+        // 记录结果
+        RandomResult memory result;
+        result.numWords = uint8(randomWords.length);
+        result.words = randomWords;
+        // TODO 计算 rarity
+        result.rarity = new uint8[](1);
+        requests[requestId] = result;
         emit RandomFulfilled(requestId, randomWords);
+    }
+
+    /// @notice 设置稀有度概率
+    /// @param _percentages uint8 数组，从 UR 到 N
+    /// @dev 加一起必须是100，如果不要某个，将其概率设置为0
+    function _setPercentage(uint8[] calldata _percentages) private {
+        if (_percentages.length != 5) {
+            revert InvalidRarityPercentage();
+        }
+        uint sumPercentage;
+        for (uint i; i < 5; i++) {
+            sumPercentage += _percentages[i];
+        }
+        if (sumPercentage != 100) {
+            revert InvalidRarityPercentage();
+        }
+        for (uint i; i < 5; i++) {
+            percentages[Rarity(i)] = _percentages[i];
+        }
+        emit PercentageChanged();
+    }
+
+    /// @notice 计算稀有度
+    /// @dev 避免比较次数过多，应该让概率最大的比较次数最少
+    function getRandomRarity(uint256[] calldata randomWords) private returns (Rarity[] memory rarity) {
+        uint256 length = randomWords.length;
+        for (uint i = 0; i < length; i++) {
+            uint8 word =  uint8(randomWords[0] % 100 + 1);  // 1-100
+            // TODO 计算稀有度
+
+        }
+
     }
 }

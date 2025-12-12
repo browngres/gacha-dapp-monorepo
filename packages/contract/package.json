@@ -21,7 +21,8 @@
     "typescript": "~5.8.0"
   },
   "scripts": {
-    "ignition:vrf": "bunx hardhat ignition deploy ./ignition/modules/VRF.ts --network 'ganache_test' --deployment-id 'VRF-on-ganache_test' --build-profile 'ganache'",
-    "clean": "bunx hardhat clean"
+    "clean": "bunx hardhat clean",
+    "compile": "bunx hardhat compile",
+    "ignition:vrf": "bunx hardhat ignition deploy ./ignition/modules/VRF.ts --network 'ganache_test' --deployment-id 'VRF-on-ganache_test' --build-profile 'ganache'"
   }
 }
