@@ -16,6 +16,9 @@ import {IVRFCoordinatorV2Plus} from "./mock/VRF_Mock_flattened.sol";
 // 枚举类型
 import {EnumerableSetLib} from "solady/src/utils/EnumerableSetLib.sol";
 
+/// @dev Only in Hardhat simulated network
+// import "hardhat/console.sol";
+
 /*
 备忘： whenNotPaused, whenPaused, nonReentrant
 */
@@ -53,13 +56,21 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     uint16 constant REQUEST_CONFIRMATIONS = 1;
     IVRFCoordinatorV2Plus COORDINATOR; // VRF coordinator
 
-    // ** Gacha 相关
+    // ** GachaPool 相关
+    // ? 定义成 config
+    uint32 public poolId; // 卡池 id
+    uint32 public supply; // 总量，最大抽卡次数
+    uint64 public costGwei; // 抽卡费用，单位 Gwei
+    uint128 __gap1; // 预留槽位
+    address public ClaimSigner; // claim 签名者
+    // ** Gacha 运行相关
     mapping(Rarity => uint8) public percentages; // 稀有度概率
     mapping(uint256 reqId => address roller) reqToAddress; // 抽卡的地址
     mapping(address roller => uint256[] requests) addressToReq; // 地址的抽卡记录
     mapping(uint256 reqId => RandomResult) requests; // 所有结果记录
-    EnumerableSetLib.Uint256Set processRequests; // 正在进行的 Request，reqId 集合
-    EnumerableSetLib.Uint256Set doneRequests; // 已经完成的 Request，reqId 集合
+    EnumerableSetLib.Uint256Set processingRequests; // 正在进行的 Request，reqId 集合
+    EnumerableSetLib.Uint256Set fulfilledRequests; // 已经满足的 Request，reqId 集合
+    EnumerableSetLib.Uint256Set claimedRequests; // 已经领取奖励的 Request，reqId 集合
     EnumerableSetLib.AddressSet allPlayers; // 所有玩过的玩家，地址集合
 
     // * 【 自定义错误 】
@@ -78,6 +89,10 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         address _vrfCoordinator,
         bytes32 _keyHash,
         address _admin,
+        uint32 _poolId,
+        uint32 _supply,
+        uint64 _costGwei,
+        address _signer,
         uint8[] memory _percentages
     ) public initializer {
         // * 访问控制
@@ -90,6 +105,11 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         keyHash = _keyHash;
         __VRFConsumerBaseV2Upgradeable_init(_vrfCoordinator);
         COORDINATOR = IVRFCoordinatorV2Plus(_vrfCoordinator);
+        // * GachaPool
+        poolId = _poolId;
+        supply = _supply;
+        costGwei = _costGwei;
+        ClaimSigner = _signer;
 
         // TODO 分配概率
         if (_percentages.length != 5) {
@@ -104,10 +124,20 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     // }
 
     /// 单抽
-    // TODO
-    // function gachaOne() returns () {}
+    event GachaOne(address indexed who, uint256 requestId);
+    event GachaTen(address indexed who, uint256 requestId);
+
+    function gachaOne() public returns (bytes32) {
+        uint256 requestId = _requestRandomWords(1);
+        emit GachaOne(msg.sender, requestId);
+        // TODO 抽卡记录
+        // TODO 兑换码构造
+        bytes32 code = keccak256("gacha");
+        return code;
+    }
 
     /// 十连
+    /// @notice 十连抽，费用打折
     // TODO
     // function gachaTen() returns () {}
 
@@ -119,24 +149,31 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         _unpause();
     }
 
-    event RandomFulfilled(uint256[] randomWords);
+    event RandomRequested(uint256 indexed requestId);
+    event RandomFulfilled(uint256 indexed requestId, uint256[] randomWords);
 
-    function requestRandomWords() external {
+    function _requestRandomWords(uint8 numWords) private returns (uint256) {
         /// @dev Will revert if subscription is not set and funded.
-        //     s_requestId = s_vrfCoordinator.requestRandomWords(
-        //         VRFV2PlusClient.RandomWordsRequest({
-        //             keyHash: s_keyHash,
-        //             subId: s_subscriptionId,
-        //             requestConfirmations: REQUEST_CONFIRMATIONS,
-        //             callbackGasLimit: CALLBACK_GAS_LIMIT,
-        //             numWords: NUM_WORDS,
-        //             extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
-        //         })
-        //     );
+        uint256 requestId = COORDINATOR.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: keyHash,
+                subId: subId,
+                requestConfirmations: REQUEST_CONFIRMATIONS,
+                callbackGasLimit: CALLBACK_GAS_LIMIT,
+                numWords: numWords,
+                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+            })
+        );
+        emit RandomRequested(requestId);
+        return requestId;
     }
 
     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
+        /// @dev never use revert in fulfillRandomWords
+        // console.log("requestId: ", requestId);
+        // console.log("Got randomWords: ", randomWords[0]);
         // s_randomWords = randomWords;
-        // emit ReturnedRandomness(randomWords);
+        // TODO 请求结果记录
+        emit RandomFulfilled(requestId, randomWords);
     }
 }
