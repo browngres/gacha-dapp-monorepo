@@ -33,6 +33,8 @@ export const proxyGachaPoolModule = buildModule("ProxyGachaPoolModule", (m) => {
   // 部署 proxy
   const proxy = m.contract("BeaconProxy", [beacon, initCallData], { from: deployer })
 
+  // 添加 consumer 到订阅中
+  m.call(VRFMock, "addConsumer", [subId, proxy])
   return { beacon, proxy }
 })
 
