@@ -21,8 +21,9 @@ import {EnumerableSetLib} from "solady/src/utils/EnumerableSetLib.sol";
 */
 
 contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumerBaseV2PlusUpgradeable {
-    // * 类型声明
-    /// @dev 稀有度
+    // * 【 类型声明 】
+    /// @notice 稀有度
+    /// @dev 如果不想要某个，不要删除，而是将其概率设置为 0
     enum Rarity {
         UR,
         SSR,
@@ -31,7 +32,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         N
     }
 
-    /// @dev 一个请求是否被 fulfilled 使用集合来查找，这里不存
+    /// @dev 随机数的请求是否被 fulfilled， 使用集合来查找，这里不存
     struct RandomResult {
         uint8 numWords;
         uint256[] words;
@@ -41,7 +42,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     using EnumerableSetLib for EnumerableSetLib.Uint256Set;
     using EnumerableSetLib for EnumerableSetLib.AddressSet;
 
-    // * 状态变量
+    // * 【 状态变量 】
     // ** 访问控制相关
     bytes32 private constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
@@ -61,13 +62,14 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     EnumerableSetLib.Uint256Set doneRequests; // 已经完成的 Request，reqId 集合
     EnumerableSetLib.AddressSet allPlayers; // 所有玩过的玩家，地址集合
 
-    // * 自定义错误
+    // * 【 自定义错误 】
     error InvalidRarityPercentage();
 
     // TODO 特权地址
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
+        // 防止攻击者绕过代理直接调用实现合约的初始化
         _disableInitializers();
     }
 
@@ -91,12 +93,14 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
         // TODO 分配概率
         if (_percentages.length != 5) {
+            // TODO 检查概率加一起等于 100
             revert InvalidRarityPercentage();
         }
     }
 
     /// 分配稀有度
     // function getRandomRarity() internal returns (Rarity) {
+    /// @dev 避免比较次数过多，应该让概率最大的比较次数最少
     // }
 
     /// 单抽
@@ -118,7 +122,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     event RandomFulfilled(uint256[] randomWords);
 
     function requestRandomWords() external {
-        // Will revert if subscription is not set and funded.
+        /// @dev Will revert if subscription is not set and funded.
         //     s_requestId = s_vrfCoordinator.requestRandomWords(
         //         VRFV2PlusClient.RandomWordsRequest({
         //             keyHash: s_keyHash,
