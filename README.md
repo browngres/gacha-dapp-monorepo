@@ -28,6 +28,7 @@
 - create2 ，由合约创建合约
 - access control roles
 - transient storage (ReentrancyGuardTransient) （仅兼容 Cancun 升级之后的 EVM）
+- ERC-7201 Namespaced 存储槽
 
 ### 仓库架构
 
@@ -57,3 +58,5 @@
 - [BeaconProxy](https://docs.openzeppelin.com/contracts/5.x/api/proxy#beaconproxy)
 - [Using with Hardhat | OpenZeppelin Docs](https://docs.openzeppelin.com/upgrades-plugins/hardhat-upgrades)
 - [WTF Solidity 极简入门: 36. 默克尔树 Merkle Tree](https://github.com/AmazingAng/WTF-Solidity/blob/main/36_MerkleTree/readme.md)
+- [Writing Upgradeable Contracts](https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable)
+- [What does `_disableInitializers();` function mean?](https://forum.openzeppelin.com/t/what-does-disableinitializers-function-mean/28730)

@@ -5,10 +5,10 @@
 ## Blueprint
 
 类似二次元抽卡游戏，或者理解成刮刮乐。
-卡池（编号） `Pool`，每次抽就是一个 `Round`
+卡池（编号） `Pool`，每次抽就是一个 `Request`
 种类以及百分概率："N,R,SR,SSR,UR"----"60,20,10,8,2"
 抽卡后马上知道结果。
-十连
+十连费用打折
 后端签名 + merkle tree 双重验证
 
 ### 合约架构
@@ -23,11 +23,13 @@
 ### 流程
 
 1. 创建卡池，编号，总量，概率，单次费用。 pool
-2. 抽奖界面：用户调用抽奖方法，合约返回一个抽奖码，后端返回一个“地址+抽奖码”的签名
-3. 系统后端将 “地址+兑奖序号” 写入 merkle tree
-4. 兑奖界面：用户连接钱包，向后台请求 proof。
-5. 用户调用合约的兑奖方法，提供 proof，签名。
-6. 合约验证 proof 后，让奖励金库给用户发放奖励
+2. 抽卡界面：用户调用抽卡方法，合约发出随机数请求。返回一个抽卡码。
+3. 后端监控链上 VRF Mock 事件，向 VRF Mock 写入随机数。VRF Mock 给到卡池
+4. 后端返回前端 requestId、签名
+5. 系统后端将 “地址+requestId” 数据写入 merkle tree
+6. 兑奖界面：用户连接钱包，向后台请求 proof 。
+7. 用户调用合约的兑奖方法，提供 proof，签名。
+8. 合约验证 proof 和签名后，让奖励金库给用户发放奖励
 
 ### 随机数 feed
 
@@ -44,38 +46,62 @@
 
 **枚举**
 
-- 稀有度
-
-**映射**
-
-- 稀有度概率： 稀有度 到 uint8
-- 抽卡人记录(rollers)： reqId 到 地址
-- 抽卡记录： 地址 到 reqId 数组
-- 随机数请求记录： reqId 到 随机数请求结构体
-
-**枚举集合**
-
-- 进行中的抽奖（等待随机数中）
-- 已完成的抽奖
-- 所有玩家
-- 特权地址
+- 稀有度: 5个。如果不想要某个，将其概率设置为 0
 
 **结构体**
 
-- 随机数请求 ：随机数个数，随机数数组，稀有度结果
+- 随机数请求: 随机数个数，随机数数组，稀有度结果
+
+**基本类型**
+
+- subId: consumer 的 VRF 订阅 id
+- keyHash: VRF 费用相关，mock 中不用管
+- CALLBACK_GAS_LIMIT: 返回随机数 tx 的gas 限制
+- REQUEST_CONFIRMATIONS: VRF 要求确认次数，mock 中不用管
+- IVRFCoordinatorV2Plus: VRF 地址
+- poolId: 卡池 id
+- supply: 总量，表现为最大抽卡次数
+- costGwei: 单次抽卡费用，单位 Gwei
+- claimSigner: claim 签名者，应该使用单独的一个地址
+
+**映射**
+
+- percentages: 稀有度概率。稀有度 到 uint8
+- reqToAddress: 抽卡人记录。reqId 到 地址
+- addressToReq: 抽卡记录。 地址 到 reqId 数组
+- requests: 随机数请求记录。 reqId 到 随机数请求结构体
+
+**枚举集合**
+
+- processingRequests: 进行中的抽卡（等待随机数中）
+- fulfilledRequests: 已获得随机数的抽卡
+- claimedRequests: 已经领取的抽卡
+- allPlayers: 所有玩家
 
 **其他**
 
 - create2 salt `keccak256("Gacha.GachaPool.<PoolId>")`
-- 抽卡码`keccak256(地址.pool编号.round编号.reqId)`，发出请求后返回
+- 抽卡码`keccak256("Gacha.<address>.<poolId>.<requestId>")`，发出请求后返回
+- 签名：后端对“地址+ requestId”消息签名
 
 ### 安全考虑
 
 抽卡失败/随机数获取失败
 
+**VRF 安全注意事项**：
+[VRF Security Considerations](https://docs.chain.link/vrf/v2-5/security)
+
+- 根据 `requestID` 按顺序 feed 随机数，以免出现意外。
+- 随机数请求不能重发或者取消
+- 合约在提交随机性请求后不应接受任何其他用户提供的输入
+- `fulfillRandomWords` 不得 revert
+- 不要重写 `rawFulfillRandomness`
+
+### 随机数生命周期
+
 ### 后端
 
-bun + sqlite 记录抽奖序号
+bun + sqlite 记录抽卡序号
 记录 merkle tree
 
 ## 待定功能
@@ -108,6 +134,8 @@ bun + sqlite 记录抽奖序号
 - Gas 优化
   - [ ] Gas report
   - [ ] 存储槽优化
+- [ ] 随机数生命周期
+- [ ] ERC-7201 Namespaced 存储槽
 
 ### dev todo
 
@@ -122,10 +150,6 @@ bun + sqlite 记录抽奖序号
 hardhat 3 / ignition 文档中零碎的合约写法。基本上是用到什么查什么，之前的学习过程中已经不断地、翻来覆去地看 hardhat 3 文档。
 
 信标代理参考 openzeppelin 文章, 结合 hardhat 3 ignition 的 Upgradeable Contracts 部署方法。
-
-合约部署合约 参考了 0G 验证者管理合约。
-
-存储槽设置 参考了 0G AgentNFT 合约存储布局
 
 [智能合约 - NFT盲盒](https://blog.csdn.net/wcc19840827/article/details/146998758)
 
