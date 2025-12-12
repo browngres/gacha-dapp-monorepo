@@ -1,6 +1,6 @@
 import { expect } from "chai"
 import { network } from "hardhat"
-import deployGachaPoolFixture from "./DeployFixture.js"
+import {deployGachaPoolFixture} from "./DeployFixture.js"
 
 describe("GachaPool init Unit Tests", function () {
   it("Should successfully initialized with Fixture given config", async function () {

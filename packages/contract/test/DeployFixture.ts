@@ -64,4 +64,4 @@ export async function deployGachaPoolFixture() {
   return { vrf, subId, gachaPool, beacon, proxy }
 }
 
-export default deployGachaPoolFixture
+export default { deployVRFMockFixture, deployGachaPoolFixture }
