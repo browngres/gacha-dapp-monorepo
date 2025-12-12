@@ -4,7 +4,7 @@ import { assert, expect } from "chai"
 import { network } from "hardhat"
 const { ethers, networkHelpers } = await network.connect()
 
-describe("Random Number Consumer Unit Tests", async function () {
+describe("Random Number Consumer Unit Tests", function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
@@ -36,7 +36,7 @@ describe("Random Number Consumer Unit Tests", async function () {
 
     return { consumer, VRFCoordinatorMock }
   }
-  describe("#requestRandomWords", async function () {
+  describe("#requestRandomWords", function () {
     it("Should successfully request a random number", async function () {
       const { consumer, VRFCoordinatorMock } = await networkHelpers.loadFixture(deployRandomNumberConsumerFixture)
       await expect(consumer.requestRandomWords()).to.emit(VRFCoordinatorMock, "RandomWordsRequested")

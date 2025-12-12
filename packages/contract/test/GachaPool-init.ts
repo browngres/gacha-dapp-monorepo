@@ -2,7 +2,7 @@ import { expect } from "chai"
 import { network } from "hardhat"
 import deployGachaPoolFixture from "./DeployFixture.js"
 
-describe("GachaPool init Unit Tests", async function () {
+describe("GachaPool init Unit Tests", function () {
   it("Should successfully initialized with Fixture given config", async function () {
     const { ethers, networkHelpers } = await network.connect()
     const {
@@ -12,6 +12,7 @@ describe("GachaPool init Unit Tests", async function () {
       beacon,
       proxy: gacha,
     } = await networkHelpers.loadFixture(deployGachaPoolFixture)
+
     const [deployer] = await ethers.getSigners()
 
     // 检查初始化参数
@@ -32,6 +33,3 @@ describe("GachaPool init Unit Tests", async function () {
     expect(sub.balance).equal(ethers.parseEther("100"), "The subscription balance is 100.")
   })
 })
-
-// 测试 percentage  1. 长度不对报错  2. 读取概率是否相同
-// expect([1, 2, 3]).to.have.lengthOf(3);
