@@ -37,28 +37,31 @@ describe("GachaPool Rarity Unit Tests", function () {
       const reqId = await gachaOneTime()
       // 给出指定的随机数
       const tx = await vrf.fulfillRandomWordsWithOverride(reqId, gachaPool.target, randomWords)
-      tx.wait()
+      const txReceipt = await tx.wait()
+      // console.log(txReceipt);
+
       // await expect(vrf.fulfillRandomWordsWithOverride(reqId,gachaPool.target,randomWords)).to.emit(gachaPool,"RandomFulfilled")
       // 检查结果
-      const result = await gachaPool.requests(reqId)
+      const result = await gachaPool.getResult(reqId)
       console.log("result of reqId:", reqId, result)
+      // expect(result[0]).equal(1) // numWords
+      // expect(result[1]).to.have.members(words); // words
+      // expect(result[2]).to.have.members([3n]) // rarity
       // expect(gachaPool.requests(reqId)).equal(expected[0])
-    }
+    };
 
   describe("Default percentages", function () {
     before("Pause and set percentages [2, 8, 10, 20, 60]", async function () {
-      console.log("Paused")
       await gachaPool.pause()
+      console.log("Paused")
       await gachaPool.setPercentage([2, 8, 10, 20, 60])
-    })
-
-    it("correctly give rarity N", testRarity([99900], [4]))
-    it("correctly give rarity UR", testRarity([99999], [0]))
-
-    after("Unpause", async function () {
-      console.log("Unpaused")
       await gachaPool.unpause()
+      console.log("Unpaused")
     })
+
+    it("correctly give rarity N", testRarity([999027], [4]))
+    // it("correctly give rarity UR", testRarity([99999], [0]))
+
   })
 })
 

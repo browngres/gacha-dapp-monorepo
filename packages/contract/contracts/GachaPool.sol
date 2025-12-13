@@ -128,7 +128,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     // * 【 public 函数】
 
     /// 单抽
-    function gachaOne() public payable returns (bytes32) {
+    function gachaOne() public payable whenNotPaused returns (bytes32) {
         // TODO 检查付款
         console.log("now in gachaOne");
         uint256 requestId = _requestRandomWords(1);
@@ -181,6 +181,16 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         return address(COORDINATOR);
     }
 
+    /// @notice 查询抽卡结果
+    /// @param reqId requestId
+    /// @return numWords 随机数个数
+    /// @return words 随机数数组
+    /// @return rarity 稀有度数组
+    function getResult(uint256 reqId) public view returns (uint8, uint256[] memory, Rarity[] memory) {
+        RandomResult storage result = requests[reqId];
+        return (result.numWords, result.words, result.rarity);
+    }
+
     // * 【 internal/private 函数】
 
     function _requestRandomWords(uint8 numWords) private returns (uint256) {
@@ -210,13 +220,17 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         processingRequests.remove(requestId);
         fulfilledRequests.add(requestId);
         // 记录结果
+        // RandomResult storage result;
+        // result = requests[requestId];
         RandomResult memory result;
         result.numWords = uint8(randomWords.length);
         result.words = randomWords;
         // 计算 rarity
-        console.log("now goto getRandomRarity");
         result.rarity = getRandomRarity(randomWords);
+        console.log("result.rarity:", uint(result.rarity[0]));
+        // !!  bug 这里仍然不给我存，测试了两个半小时是动态数组不让存，也不让 push
         requests[requestId] = result;
+        // console.log("now here");
         console.log("now ready to emit");
         emit RandomFulfilled(requestId, randomWords);
     }
@@ -247,6 +261,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @dev 从后往前遍历（N->R->SR->SSR->UR），概率大的先判断
     function getRandomRarity(uint256[] calldata randomWords) private view returns (Rarity[] memory rarity) {
         uint256 length = randomWords.length;
+        rarity = new Rarity[](length);
         for (uint i = 0; i < length; i++) {
             uint8 word = uint8((randomWords[i] % 100) + 1); // 1-100
             console.log("word:", word);
@@ -256,12 +271,10 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
                 console.log("cumulative:", cumulative);
                 if (word <= cumulative) {
                     console.log("ready to set rarity");
-                    // !! bug 这一步就是不往下走了
-                    // rarity[i] = Rarity.SSR;
                     rarity[i] = Rarity(j);
-                    console.log(uint(rarity[0]));
+                    console.log("rarity:", uint(rarity[i]));
                     console.log("already set rarity");
-                    // console.log("now here");
+                    break;
                 }
             }
         }
