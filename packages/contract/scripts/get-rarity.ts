@@ -1,4 +1,3 @@
-
 enum Rarity {
   UR = "UR", // Ultra Rare
   SSR = "SSR", // Super Super Rare

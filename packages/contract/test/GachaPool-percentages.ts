@@ -8,12 +8,12 @@ describe("GachaPool Percentage Unit Tests", function () {
   it("Should successfully initialized with given percentage config", async function () {
     const { ethers, ignition } = await network.connect()
     const { proxy: _gacha } = await ignition.deploy(gachaPoolModule)
-    const gachaPoll = await ethers.getContractAt("GachaPool", _gacha.target)
-    expect(await gachaPoll.percentages(0)).equal(2)
-    expect(await gachaPoll.percentages(1)).equal(8)
-    expect(await gachaPoll.percentages(2)).equal(10)
-    expect(await gachaPoll.percentages(3)).equal(20)
-    expect(await gachaPoll.percentages(4)).equal(60)
+    const gachaPool = await ethers.getContractAt("GachaPool", _gacha.target)
+    expect(await gachaPool.percentages(0)).equal(2)
+    expect(await gachaPool.percentages(1)).equal(8)
+    expect(await gachaPool.percentages(2)).equal(10)
+    expect(await gachaPool.percentages(3)).equal(20)
+    expect(await gachaPool.percentages(4)).equal(60)
   })
 
   describe("Wrong percentage initializing revert", function () {
@@ -81,9 +81,9 @@ describe("GachaPool Percentage Unit Tests", function () {
       // 必须提前暂停
       const { ethers, ignition } = await network.connect()
       const { proxy: _gacha } = await ignition.deploy(gachaPoolModule)
-      const gachaPoll = await ethers.getContractAt("GachaPool", _gacha.target)
-      await expect(gachaPoll.setPercentage([20, 20, 20, 20, 20])).to.be.revertedWithCustomError(
-        gachaPoll,
+      const gachaPool = await ethers.getContractAt("GachaPool", _gacha.target)
+      await expect(gachaPool.setPercentage([20, 20, 20, 20, 20])).to.be.revertedWithCustomError(
+        gachaPool,
         "ExpectedPause",
       )
     })
@@ -94,12 +94,12 @@ describe("GachaPool Percentage Unit Tests", function () {
       const { proxy: _gacha } = await ignition.deploy(gachaPoolModule)
       // ! 天知道这个 fixture 害我找 bug 找多久。bug 位于 git commit `8a9a3ded` 。 还是 ignition 好！
       // const { proxy: gacha } = await networkHelpers.loadFixture(deployGachaPoolFixture)
-      const gachaPoll = await ethers.getContractAt("GachaPool", _gacha.target)
-      await gachaPoll.pause()
+      const gachaPool = await ethers.getContractAt("GachaPool", _gacha.target)
+      await gachaPool.pause()
       // 使用非 admin 账户
       const notAdmin = (await ethers.getSigners())[1]
-      await expect(gachaPoll.connect(notAdmin).setPercentage([20, 20, 20, 20, 20])).to.be.revertedWithCustomError(
-        gachaPoll,
+      await expect(gachaPool.connect(notAdmin).setPercentage([20, 20, 20, 20, 20])).to.be.revertedWithCustomError(
+        gachaPool,
         "AccessControlUnauthorizedAccount",
       )
     })
@@ -108,19 +108,19 @@ describe("GachaPool Percentage Unit Tests", function () {
       // 正常设置
       const { ethers, ignition } = await network.connect()
       const { proxy: _gacha } = await ignition.deploy(gachaPoolModule)
-      const gachaPoll = await ethers.getContractAt("GachaPool", _gacha.target)
-      expect(await gachaPoll.percentages(0)).equal(2)
-      expect(await gachaPoll.percentages(1)).equal(8)
-      expect(await gachaPoll.percentages(2)).equal(10)
-      expect(await gachaPoll.percentages(3)).equal(20)
-      expect(await gachaPoll.percentages(4)).equal(60)
-      await gachaPoll.pause()
-      await gachaPoll.setPercentage([5, 15, 20, 25, 35])
-      expect(await gachaPoll.percentages(0)).equal(5)
-      expect(await gachaPoll.percentages(1)).equal(15)
-      expect(await gachaPoll.percentages(2)).equal(20)
-      expect(await gachaPoll.percentages(3)).equal(25)
-      expect(await gachaPoll.percentages(4)).equal(35)
+      const gachaPool = await ethers.getContractAt("GachaPool", _gacha.target)
+      expect(await gachaPool.percentages(0)).equal(2)
+      expect(await gachaPool.percentages(1)).equal(8)
+      expect(await gachaPool.percentages(2)).equal(10)
+      expect(await gachaPool.percentages(3)).equal(20)
+      expect(await gachaPool.percentages(4)).equal(60)
+      await gachaPool.pause()
+      await gachaPool.setPercentage([5, 15, 20, 25, 35])
+      expect(await gachaPool.percentages(0)).equal(5)
+      expect(await gachaPool.percentages(1)).equal(15)
+      expect(await gachaPool.percentages(2)).equal(20)
+      expect(await gachaPool.percentages(3)).equal(25)
+      expect(await gachaPool.percentages(4)).equal(35)
     })
   })
 })
