@@ -21,7 +21,8 @@ describe("GachaPool init Unit Tests", function () {
     expect(await gacha.supply()).equal(100)
     expect(await gacha.costGwei()).equal(ethers.parseUnits("0.1", "gwei"))
     expect(await gacha.claimSigner()).equal(deployer.address)
-
+    expect(await gacha.getAddressVRF()).equal(vrf.target)
+    
     // 检查订阅
     const ids = await vrf.getActiveSubscriptionIds(0, 10)
     expect(ids).to.have.lengthOf(1, "VRF has one subscription.")

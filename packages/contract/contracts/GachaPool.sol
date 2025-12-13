@@ -174,6 +174,11 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     // function withdraw() onlyRole(ADMIN_ROLE) returns () {}
 
     // * 【 view 函数】
+    /// @notice 返回使用的 VRF 合约地址
+    /// @dev 真实的 VRF 合约是看不到往链上写的随机数的，Mock 版本则可以看到。
+    function getAddressVRF() public view returns (address) {
+        return address(COORDINATOR);
+    }
 
     // * 【 internal/private 函数】
 
