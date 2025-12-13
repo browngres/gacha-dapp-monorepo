@@ -128,6 +128,7 @@ bun + sqlite 记录抽卡序号
   - [x] 信标代理
   - [ ] ReentranceGuard
 - [ ] 编写测试
+  - [ ] 让测试兼容 hardhat 和 ganache（after 清理部署文件夹）
 - [ ] 给合约代码添加 NatSpec 注释
 - [ ] 按照风格指南整理合约代码
 - [ ] 检查修饰符(role, pause, reentrance)

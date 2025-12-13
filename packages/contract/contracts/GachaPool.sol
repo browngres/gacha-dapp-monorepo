@@ -17,7 +17,7 @@ import {IVRFCoordinatorV2Plus} from "./mock/VRF_Mock_flattened.sol";
 import {EnumerableSetLib} from "solady/src/utils/EnumerableSetLib.sol";
 
 /// @dev Only in Hardhat simulated network
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 /*
 备忘： whenNotPaused, whenPaused, nonReentrant
@@ -68,9 +68,9 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     // ** Gacha 运行相关
     mapping(Rarity => uint8) public percentages; // 稀有度概率
-    mapping(uint256 reqId => address roller) reqToAddress; // 抽卡的地址
-    mapping(address roller => uint256[] requestIds) addressToReq; // 地址的抽卡记录
-    mapping(uint256 reqId => RandomResult) requests; // 所有结果记录
+    mapping(uint256 reqId => address roller) public reqToAddress; // 抽卡的地址
+    mapping(address roller => uint256[] requestIds) public addressToReq; // 地址的抽卡记录
+    mapping(uint256 reqId => RandomResult) public requests; // 所有结果记录
     EnumerableSetLib.Uint256Set processingRequests; // 正在进行的 Request，reqId 集合
     EnumerableSetLib.Uint256Set fulfilledRequests; // 已经满足的 Request，reqId 集合
     EnumerableSetLib.Uint256Set claimedRequests; // 已经领取奖励的 Request，reqId 集合
@@ -130,6 +130,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// 单抽
     function gachaOne() public payable returns (bytes32) {
         // TODO 检查付款
+        console.log("now in gachaOne");
         uint256 requestId = _requestRandomWords(1);
         reqToAddress[requestId] = msg.sender;
         addressToReq[msg.sender].push(requestId);
@@ -184,6 +185,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     function _requestRandomWords(uint8 numWords) private returns (uint256) {
         /// @dev Will revert if subscription is not set and funded.
+        console.log("now in _requestRandomWords");
         uint256 requestId = COORDINATOR.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: keyHash,
@@ -204,6 +206,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @dev never use revert in fulfillRandomWords
     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
         // 更新请求的状态为：已满足。
+        console.log("now in fulfillRandomWords");
         processingRequests.remove(requestId);
         fulfilledRequests.add(requestId);
         // 记录结果
@@ -211,8 +214,10 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         result.numWords = uint8(randomWords.length);
         result.words = randomWords;
         // 计算 rarity
+        console.log("now goto getRandomRarity");
         result.rarity = getRandomRarity(randomWords);
         requests[requestId] = result;
+        console.log("now ready to emit");
         emit RandomFulfilled(requestId, randomWords);
     }
 
@@ -243,12 +248,20 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     function getRandomRarity(uint256[] calldata randomWords) private view returns (Rarity[] memory rarity) {
         uint256 length = randomWords.length;
         for (uint i = 0; i < length; i++) {
-            uint8 word = uint8((randomWords[0] % 100) + 1); // 1-100
+            uint8 word = uint8((randomWords[i] % 100) + 1); // 1-100
+            console.log("word:", word);
             uint8 cumulative = 0;
-            for (uint8 j = 5; j > 0; j--) {
-                cumulative += percentages[Rarity(j - 1)];
+            for (uint8 j = 4; j >= 0; j--) {
+                cumulative += percentages[Rarity(j)];
+                console.log("cumulative:", cumulative);
                 if (word <= cumulative) {
-                    rarity[i] = Rarity(j - 1);
+                    console.log("ready to set rarity");
+                    // !! bug 这一步就是不往下走了
+                    // rarity[i] = Rarity.SSR;
+                    rarity[i] = Rarity(j);
+                    console.log(uint(rarity[0]));
+                    console.log("already set rarity");
+                    // console.log("now here");
                 }
             }
         }
