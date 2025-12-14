@@ -3,11 +3,12 @@ const { ethers } = await network.connect()
 
 async function main() {
   // 部署
-  const gachaPool = await ethers.getContractAt("GachaPool", "0xC3DAD685922ef673eb81E7920Eff646F70BF54C1")
-  const vrf = await ethers.getContractAt("VRFCoordinatorV2_5Mock", "0x76bdD8D6c93D0d41fEf61bf43760fCC592A06366")
-  await gachaPool.requestRandomWords()
+  const gachaPool = await ethers.getContractAt("GachaPool", "0x70d9298507C9401F7887Be9ccA440Cec3b8fdA59")
+  const vrf = await ethers.getContractAt("VRFCoordinatorV2_5Mock", "0x7CBbC2fa908d392E9BbA71fA23D48670312D81d7")
 
-  // console.log("requestId:", requestId)
+  // await gachaPool.pause()
+  // await gachaPool.setPercentage([20,20,10,30,20])
+
 
   // 查看当前订阅
   const ids = await vrf.getActiveSubscriptionIds(0, 10)
@@ -22,7 +23,35 @@ async function main() {
 
   // mock 任意充值，单位是 LINK，nonpayable
   // 每次消耗 0.35 左右
-  await vrf.fundSubscription(ids[1], ethers.parseEther("100"))
+  // await vrf.fundSubscription(ids[1], ethers.parseEther("100"))
+
+  const gachaOneTime = async (): Promise<bigint> => {
+    // 发起一次请求，返回 reqId
+    return new Promise<bigint>((resolve, reject) => {
+      // 防止永远等不到事件（超时 3 秒）
+      const timer = setTimeout(() => {
+        reject(new Error("Timeout waiting for RandomRequested"))
+      }, 3000)
+      // 监听请求事件(这里也可以监听 VRF 的)
+      gachaPool.once(gachaPool.getEvent("RandomRequested"), (requestId) => {
+        clearTimeout(timer) // 清除超时
+        resolve(requestId) // 返回 reqId
+      })
+      gachaPool.gachaOne()
+    })
+  }
+
+
+  const reqId = await gachaOneTime()
+  console.log(reqId);
+
+  // 给出指定的随机数
+  await vrf.fulfillRandomWordsWithOverride(reqId, gachaPool.target, [99999n])
+  await vrf.fulfillRandomWordsWithOverride(reqId, gachaPool.target, [99999n])
+  // console.log(tx);
+
+  // const txReceipt = await tx.wait()
+  // console.log(txReceipt);
 }
 
 main().catch((error) => {

@@ -32,22 +32,17 @@ describe("GachaPool Rarity Unit Tests", function () {
     })
   }
 
-  const testRarity = (randomWords: number[], expected: number[]) =>
+  const testRarity = (randomWords: bigint[], expected: bigint[]) =>
     async function () {
       const reqId = await gachaOneTime()
       // 给出指定的随机数
-      const tx = await vrf.fulfillRandomWordsWithOverride(reqId, gachaPool.target, randomWords)
-      const txReceipt = await tx.wait()
-      // console.log(txReceipt);
-
-      // await expect(vrf.fulfillRandomWordsWithOverride(reqId,gachaPool.target,randomWords)).to.emit(gachaPool,"RandomFulfilled")
+      await expect(vrf.fulfillRandomWordsWithOverride(reqId,gachaPool.target,randomWords)).to.emit(gachaPool,"RandomFulfilled")
       // 检查结果
       const result = await gachaPool.getResult(reqId)
       console.log("result of reqId:", reqId, result)
-      // expect(result[0]).equal(1) // numWords
-      // expect(result[1]).to.have.members(words); // words
-      // expect(result[2]).to.have.members([3n]) // rarity
-      // expect(gachaPool.requests(reqId)).equal(expected[0])
+      expect(result[0]).equal(1) // numWords
+      expect(result[1]).to.have.members(randomWords); // words
+      expect(result[2]).to.have.members(expected) // rarity
     };
 
   describe("Default percentages", function () {
@@ -59,7 +54,7 @@ describe("GachaPool Rarity Unit Tests", function () {
       console.log("Unpaused")
     })
 
-    it("correctly give rarity N", testRarity([999027], [4]))
+    it("correctly give rarity N", testRarity([999027n], [4n]))
     // it("correctly give rarity UR", testRarity([99999], [0]))
 
   })
