@@ -59,7 +59,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     uint16 constant REQUEST_CONFIRMATIONS = 1;
     IVRFCoordinatorV2Plus COORDINATOR; // VRF coordinator
 
-    // ** GachaPool 相关
+    // ** GachaPool 配置相关
     // ? 定义成 config
     uint32 public poolId; // 卡池 id
     uint32 public supply; // 总量，最大抽卡次数
@@ -67,9 +67,12 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     uint128 __gap1; // 预留槽位
     address public claimSigner; // claim 签名者
     uint32 constant PROCESSING_CAP = 100; // 未结算的请求数量限制
-
-    // ** Gacha 运行相关
+    uint8 public discountGachaTen; // 十连费用折扣，0-100
+    bool public guarantee; // 是否十连保底机制
+    Rarity public guarantee_rarity; // 保底稀有度
     mapping(Rarity => uint8) public percentages; // 稀有度概率
+
+    // ** GachaPool 记录相关
     mapping(uint256 reqId => address roller) public reqToAddress; // 抽卡的地址
     mapping(address roller => uint256[] requestIds) public addressToReq; // 地址的抽卡记录
     mapping(uint256 reqId => RandomResult) requests; // 所有结果记录
@@ -77,10 +80,12 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     EnumerableSetLib.Uint256Set fulfilledRequests; // 已经满足的 Request，reqId 集合
     EnumerableSetLib.Uint256Set claimedRequests; // 已经领取奖励的 Request，reqId 集合
     EnumerableSetLib.AddressSet allPlayers; // 所有玩过的玩家，地址集合
+    // TODO UR 记录
     // TODO 特权地址
 
     // * 【 自定义错误 】
     error InvalidRarityPercentage();
+    error InsufficientFunds();
 
     // * 【 自定义事件 】
     event GachaOne(address indexed who, uint256 requestId);
@@ -88,6 +93,9 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     event RandomRequested(uint256 indexed requestId);
     event RandomFulfilled(uint256 indexed requestId, uint256[] randomWords);
     event PercentageChanged();
+    event costGweiChanged(uint64 costGwei);
+    event discountGachaTenChanged(uint8 discount);
+    event Guaranteed(uint256 indexed requestId, Rarity);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -104,7 +112,10 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         uint32 _supply,
         uint64 _costGwei,
         address _signer,
-        uint8[] calldata _percentages
+        uint8[] calldata _percentages,
+        uint8 _discountGachaTen,
+        bool _guarantee,
+        Rarity _guarantee_rarity
     ) public initializer {
         // * 访问控制
         __Pausable_init();
@@ -122,16 +133,20 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         supply = _supply;
         costGwei = _costGwei;
         claimSigner = _signer;
-
+        discountGachaTen = _discountGachaTen;
+        guarantee = _guarantee;
+        guarantee_rarity = _guarantee_rarity;
         // 分配概率
         _setPercentage(_percentages);
     }
 
     // * 【 public 函数】
 
-    /// 单抽
+    /// @notice 单抽
     function gachaOne() public payable whenNotPaused returns (bytes32) {
-        // TODO 检查付款
+        if (msg.value < costGwei * 1 gwei) {
+            revert InsufficientFunds();
+        }
         uint256 requestId = _requestRandomWords(1);
         reqToAddress[requestId] = msg.sender;
         addressToReq[msg.sender].push(requestId);
@@ -145,9 +160,22 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         return code;
     }
 
-    /// 十连
     /// @notice 十连抽，费用打折
-    // function gachaTen() returns () {}
+    /// @dev discountGachaTen 90 代表代表9折， 10% off
+    function gachaTen() public payable whenNotPaused returns (bytes32) {
+        if (msg.value < (costGwei * 1 gwei * discountGachaTen) / 10) {
+            revert InsufficientFunds();
+        }
+        uint256 requestId = _requestRandomWords(10);
+        reqToAddress[requestId] = msg.sender;
+        addressToReq[msg.sender].push(requestId);
+        processingRequests.add(requestId, PROCESSING_CAP);
+        allPlayers.add(msg.sender);
+        emit GachaTen(msg.sender, requestId);
+        // TODO 兑换码构造
+        bytes32 code = keccak256("gacha");
+        return code;
+    }
 
     /// 兑奖
     // function claim() returns () {}
@@ -169,8 +197,19 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         _setPercentage(_percentages);
     }
 
-    /// 设置费用，必须先暂停
-    // function setCostGwei() onlyRole(ADMIN_ROLE) returns () {}
+    /// @notice 设置费用
+    /// @dev 合约必须处于暂停
+    function setCostGwei(uint64 _cost) public onlyRole(ADMIN_ROLE) whenPaused {
+        costGwei = _cost;
+        emit costGweiChanged(_cost);
+    }
+
+    /// @notice 设置十连折扣
+    /// @dev 合约必须处于暂停
+    function setDiscountGachaTen(uint8 _discount) public onlyRole(ADMIN_ROLE) whenPaused {
+        discountGachaTen = _discount;
+        emit discountGachaTenChanged(_discount);
+    }
 
     /// 提取余额
     // function withdraw() onlyRole(ADMIN_ROLE) returns () {}
@@ -229,6 +268,14 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
         // 计算 rarity
         result.rarity = getRandomRarity(randomWords);
+
+        // 保底机制，修改数组中的最后一个
+        if (result.numWords == 10 && guarantee) {
+            result.words[9] = 0;
+            result.rarity[9] = guarantee_rarity;
+            emit Guaranteed(requestId, guarantee_rarity);
+        }
+
         requests[requestId] = result;
         // console.log("now ready to emit");
         emit RandomFulfilled(requestId, randomWords);
