@@ -2,13 +2,13 @@
 pragma solidity ^0.8.28;
 
 // 访问控制
-/// @notice flatten 中已经添加了 Initializable.sol ，所以不能再次导入
+/// @dev flatten 中已经添加了 Initializable.sol ，所以不能再次导入
 // import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
 // Chainlink VRF
-/// @notice 这是开发环境的 Mock 合约，生产环境需更换导入路径
+/// @dev 这是开发环境的 Mock 合约，生产环境需更换导入路径
 import {VRFConsumerBaseV2PlusUpgradeable} from "./mock/VRF_Mock_flattened.sol";
 import {VRFV2PlusClient} from "./mock/VRF_Mock_flattened.sol";
 import {IVRFCoordinatorV2Plus} from "./mock/VRF_Mock_flattened.sol";
@@ -34,6 +34,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         R,
         N
     }
+
     /// @dev 随机数的请求是否被 fulfilled， 使用集合来查找，这里不存
     struct RandomResult {
         uint8 numWords;
@@ -71,7 +72,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     mapping(Rarity => uint8) public percentages; // 稀有度概率
     mapping(uint256 reqId => address roller) public reqToAddress; // 抽卡的地址
     mapping(address roller => uint256[] requestIds) public addressToReq; // 地址的抽卡记录
-    mapping(uint256 reqId => RandomResult) public requests; // 所有结果记录
+    mapping(uint256 reqId => RandomResult) requests; // 所有结果记录
     EnumerableSetLib.Uint256Set processingRequests; // 正在进行的 Request，reqId 集合
     EnumerableSetLib.Uint256Set fulfilledRequests; // 已经满足的 Request，reqId 集合
     EnumerableSetLib.Uint256Set claimedRequests; // 已经领取奖励的 Request，reqId 集合
@@ -131,7 +132,6 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// 单抽
     function gachaOne() public payable whenNotPaused returns (bytes32) {
         // TODO 检查付款
-        console.log("now in gachaOne");
         uint256 requestId = _requestRandomWords(1);
         reqToAddress[requestId] = msg.sender;
         addressToReq[msg.sender].push(requestId);
@@ -196,7 +196,6 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     function _requestRandomWords(uint8 numWords) private returns (uint256) {
         /// @dev Will revert if subscription is not set and funded.
-        console.log("now in _requestRandomWords");
         uint256 requestId = COORDINATOR.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: keyHash,
@@ -217,19 +216,21 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @dev never use revert in fulfillRandomWords
     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
         // 更新请求的状态为：已满足。
-        console.log("now in fulfillRandomWords");
         processingRequests.remove(requestId);
         fulfilledRequests.add(requestId);
+
         // 记录结果
+        /// @dev 另一种方法，使用指针指向存储区。多次操作存储浪费 gas
         // RandomResult storage result;
         // result = requests[requestId];
         RandomResult memory result;
         result.numWords = uint8(randomWords.length);
         result.words = randomWords;
+
         // 计算 rarity
         result.rarity = getRandomRarity(randomWords);
         requests[requestId] = result;
-        console.log("now ready to emit");
+        // console.log("now ready to emit");
         emit RandomFulfilled(requestId, randomWords);
     }
 
@@ -262,16 +263,14 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         rarity = new Rarity[](length);
         for (uint i = 0; i < length; i++) {
             uint8 word = uint8((randomWords[i] % 100) + 1); // 1-100
-            console.log("word:", word);
+            // console.log("word:", word);
             uint8 cumulative = 0;
             for (uint8 j = 4; j >= 0; j--) {
                 cumulative += percentages[Rarity(j)];
-                console.log("cumulative:", cumulative);
+                // console.log("cumulative:", cumulative);
                 if (word <= cumulative) {
-                    console.log("ready to set rarity");
                     rarity[i] = Rarity(j);
-                    console.log("rarity:", uint(rarity[i]));
-                    console.log("already set rarity");
+                    // console.log("already set rarity");
                     break;
                 }
             }
