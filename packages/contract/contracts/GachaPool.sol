@@ -34,7 +34,6 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         R,
         N
     }
-
     /// @dev 随机数的请求是否被 fulfilled， 使用集合来查找，这里不存
     struct RandomResult {
         uint8 numWords;
@@ -53,7 +52,9 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     // ** VRF 相关
     uint256 subId; // subscriptionId
     bytes32 keyHash;
-    uint32 constant CALLBACK_GAS_LIMIT = 100_000;
+    /// @dev // !! 根据 fulfillRandomWords 的需求设置 Gas limit。
+    /// @dev // !! 不能太小。就算 fulfillRandomWords 失败也不会 revert。表现为没有存。
+    uint32 constant CALLBACK_GAS_LIMIT = 10_000_000;
     uint16 constant REQUEST_CONFIRMATIONS = 1;
     IVRFCoordinatorV2Plus COORDINATOR; // VRF coordinator
 
@@ -227,10 +228,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         result.words = randomWords;
         // 计算 rarity
         result.rarity = getRandomRarity(randomWords);
-        console.log("result.rarity:", uint(result.rarity[0]));
-        // !!  bug 这里仍然不给我存，测试了两个半小时是动态数组不让存，也不让 push
         requests[requestId] = result;
-        // console.log("now here");
         console.log("now ready to emit");
         emit RandomFulfilled(requestId, randomWords);
     }
