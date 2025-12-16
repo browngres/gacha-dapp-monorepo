@@ -18,6 +18,7 @@
 合约2：卡池实现，继承了 consumer。主要的逻辑
 合约3：卡池信标
 合约4：随机数 VRF Coordinator Mock
+合约5， Gacha card NFT
 
 `RandomConsumer.sol` 用于测试 VRF 的一个最小 consumer
 
@@ -30,7 +31,7 @@
 5. 系统后端将 “地址+requestId” 数据写入 merkle tree
 6. 兑奖界面：用户连接钱包，向后台请求 proof 。
 7. 用户调用合约的兑奖方法，提供 proof，签名。
-8. 合约验证 proof 和签名后，让奖励金库给用户发放奖励
+8. 合约验证 proof 和签名后，mint nft
 
 ### 随机数 feed
 
@@ -85,6 +86,47 @@
 - 抽卡码`keccak256("Gacha.<address>.<poolId>.<requestId>")`，发出请求后返回
 - 签名：后端对“地址+ requestId”消息签名
 
+### NFT Scheme
+
+基于 ERC721（使用 Solady 的实现代码）
+除了 metadata，额外使用 Token ExtraData 记录 Rarity
+
+**metadata**:
+
+```json
+{
+  "name": "Rin",
+  "description": "A Gacha card.",
+  "image": "https://xx/xx/123.png",
+  "external_url": "https://xxxx/123",
+  "attributes": [
+    {
+      "trait_type": "Waifu",
+      "value": "Rin"
+    },
+    {
+      "trait_type": "Color",
+      "value": "Green"
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "UR"
+    }
+  ]
+}
+```
+
+**Contract-level metadata**:
+
+```json
+{
+  "name": "Gacha card NFT",
+  "description": "Gacha card NFT collections created by Rainy with ❤️",
+  "image": "https://external-link-url.com/image.png",
+  "external_link": "https://external-link-url.com"
+}
+```
+
 ### 安全考虑
 
 抽卡失败/随机数获取失败
@@ -104,16 +146,16 @@
 
 bun + sqlite 记录抽卡序号
 记录 merkle tree
+NFT Token URI
+NFT contractURI
 
 ## 待定功能
 
-- NFT
 - 卡池管理合约，用于创建卡池（创建信标代理）。使用合约工厂部署合约。查看状态，批量暂停。
 - 特权用户（roles 实现）
   - 免费抽
   - 打折抽
   - 必出稀有
-- 保底机制
 
 ## TODO
 
@@ -121,6 +163,7 @@ bun + sqlite 记录抽卡序号
 
 - [ ] 基本的前端界面
 - [ ] 前端抽卡特效
+- [ ] “我的” NFT 显示面板
 
 ### 合约
 

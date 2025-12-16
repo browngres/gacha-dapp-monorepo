@@ -15,7 +15,8 @@
       "rainbowkit",
       "Reentrancy",
       "solady",
-      "VRFV"
+      "VRFV",
+      "Waifu"
     ],
     "prettier.tabWidth": 2,
     "editor.formatOnSave": false,
