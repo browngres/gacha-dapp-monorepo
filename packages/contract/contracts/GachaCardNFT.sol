@@ -13,9 +13,10 @@ contract GachaCardNFT is ERC721, Ownable {
 
     using LibString for uint256;
 
-    constructor(string memory name_, string memory symbol_) {
+    constructor(string memory name_, string memory symbol_, address initialOwner) {
         _name = name_;
         _symbol = symbol_;
+        _initializeOwner(initialOwner);
     }
 
     function name() public view override returns (string memory) {
