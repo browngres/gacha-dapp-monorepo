@@ -69,7 +69,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     uint32 constant PROCESSING_CAP = 100; // 未结算的请求数量限制
     uint8 public discountGachaTen; // 十连费用折扣，0-100
     bool public guarantee; // 是否十连保底机制
-    Rarity public guarantee_rarity; // 保底稀有度
+    Rarity public guaranteeRarity; // 保底稀有度
     mapping(Rarity => uint8) public percentages; // 稀有度概率
 
     // ** GachaPool 记录相关
@@ -115,7 +115,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         uint8[] calldata _percentages
         // uint8 _discountGachaTen,
         // bool _guarantee,
-        // Rarity _guarantee_rarity
+        // Rarity _guaranteeRarity
     ) public initializer {
         // * 访问控制
         __Pausable_init();
@@ -135,7 +135,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         claimSigner = _signer;
         // discountGachaTen = _discountGachaTen;
         // guarantee = _guarantee;
-        // guarantee_rarity = _guarantee_rarity;
+        // guaranteeRarity = _guaranteeRarity;
         // 分配概率
         _setPercentage(_percentages);
     }
@@ -272,8 +272,8 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         // 保底机制，修改数组中的最后一个
         if (result.numWords == 10 && guarantee) {
             result.words[9] = 0;
-            result.rarity[9] = guarantee_rarity;
-            emit Guaranteed(requestId, guarantee_rarity);
+            result.rarity[9] = guaranteeRarity;
+            emit Guaranteed(requestId, guaranteeRarity);
         }
 
         requests[requestId] = result;
