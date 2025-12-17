@@ -1,6 +1,6 @@
 import { expect } from "chai"
 import { network } from "hardhat"
-import {deployGachaPoolFixture} from "./DeployFixture.js"
+import { deployGachaPoolFixture } from "./DeployFixture.js"
 
 describe("GachaPool init Unit Tests", function () {
   it("Should successfully initialized with Fixture given config", async function () {
@@ -12,6 +12,7 @@ describe("GachaPool init Unit Tests", function () {
       beacon,
       proxy: gacha,
     } = await networkHelpers.loadFixture(deployGachaPoolFixture)
+    // 3.20 M Gas
 
     const [deployer] = await ethers.getSigners()
 
@@ -20,9 +21,20 @@ describe("GachaPool init Unit Tests", function () {
     expect(await gacha.poolId()).equal(1)
     expect(await gacha.supply()).equal(100)
     expect(await gacha.costGwei()).equal(ethers.parseUnits("0.1", "gwei"))
+    expect(await gacha.discountGachaTen()).equal(90)
+    expect(await gacha.guarantee()).equal(true)
+    expect(await gacha.guaranteeRarity()).equal(1)
+
+    const percentages = await gacha.percentages()
+    expect(percentages[0]).equal(2)
+    expect(percentages[1]).equal(8)
+    expect(percentages[2]).equal(10)
+    expect(percentages[3]).equal(20)
+    expect(percentages[4]).equal(60)
+
     expect(await gacha.claimSigner()).equal(deployer.address)
     expect(await gacha.getAddressVRF()).equal(vrf.target)
-    
+
     // 检查订阅
     const ids = await vrf.getActiveSubscriptionIds(0, 10)
     expect(ids).to.have.lengthOf(1, "VRF has one subscription.")

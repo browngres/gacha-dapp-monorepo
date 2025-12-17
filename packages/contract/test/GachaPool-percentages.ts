@@ -9,11 +9,12 @@ describe("GachaPool Percentage Unit Tests", function () {
     const { ethers, ignition } = await network.connect()
     const { proxy: _gacha } = await ignition.deploy(gachaPoolModule)
     const gachaPool = await ethers.getContractAt("GachaPool", _gacha.target)
-    expect(await gachaPool.percentages(0)).equal(2)
-    expect(await gachaPool.percentages(1)).equal(8)
-    expect(await gachaPool.percentages(2)).equal(10)
-    expect(await gachaPool.percentages(3)).equal(20)
-    expect(await gachaPool.percentages(4)).equal(60)
+    const percentages = await gachaPool.percentages()
+    expect(percentages[0]).equal(2)
+    expect(percentages[1]).equal(8)
+    expect(percentages[2]).equal(10)
+    expect(percentages[3]).equal(20)
+    expect(percentages[4]).equal(60)
   })
 
   describe("Wrong percentage initializing revert", function () {
@@ -35,39 +36,26 @@ describe("GachaPool Percentage Unit Tests", function () {
 
     it("Should revert if percentage sum is not 100", async function () {
       // percentages 合计不为 100
-      const percentages: number[] = [10, 10, 10, 10, 10]
-      const initCallData = gachaPool.interface.encodeFunctionData("initialize", [
-        0,
-        "0x0123456789012345678901234567890123456789",
-        keyHash,
-        deployer.address,
-        1, // poolId
-        100, // supply
-        parseUnits("0.1", "gwei"), // 单次费用 0.1 ether，转换为 gwei
-        deployer.address, // signer
-        percentages, // 概率
-      ])
-      // 初始化时 revert
-      await expect(hh_ether.deployContract("BeaconProxy", [beacon, initCallData])).to.be.revertedWithCustomError(
-        gachaPool,
-        "InvalidRarityPercentage",
-      )
-    })
+      const badPercentages: [number, number, number, number, number] = [10, 10, 10, 10, 10]
 
-    it("Should revert if percentage length is not 5", async function () {
-      // percentages 长度不为 5
-      const percentages: number[] = [25, 25, 25, 25]
+      const defaultConfig: GachaPool.PoolConfigStruct = {
+        poolId: 1,
+        supply: 100,
+        costGwei: parseUnits("0.1", "gwei"), // 单次费用 0.1 ether，转换为 gwei
+        discountGachaTen: 90, // 9折
+        guarantee: true,
+        guaranteeRarity: 1,
+        percentages: badPercentages,
+      }
       const initCallData = gachaPool.interface.encodeFunctionData("initialize", [
         0,
         "0x0123456789012345678901234567890123456789",
         keyHash,
         deployer.address,
-        1, // poolId
-        100, // supply
-        parseUnits("0.1", "gwei"), // 单次费用 0.1 ether，转换为 gwei
         deployer.address, // signer
-        percentages, // 概率
+        defaultConfig,
       ])
+
       // 初始化时 revert
       await expect(hh_ether.deployContract("BeaconProxy", [beacon, initCallData])).to.be.revertedWithCustomError(
         gachaPool,
@@ -109,18 +97,22 @@ describe("GachaPool Percentage Unit Tests", function () {
       const { ethers, ignition } = await network.connect()
       const { proxy: _gacha } = await ignition.deploy(gachaPoolModule)
       const gachaPool = await ethers.getContractAt("GachaPool", _gacha.target)
-      expect(await gachaPool.percentages(0)).equal(2)
-      expect(await gachaPool.percentages(1)).equal(8)
-      expect(await gachaPool.percentages(2)).equal(10)
-      expect(await gachaPool.percentages(3)).equal(20)
-      expect(await gachaPool.percentages(4)).equal(60)
+
+      const percentages = await gachaPool.percentages()
+      expect(percentages[0]).equal(2)
+      expect(percentages[1]).equal(8)
+      expect(percentages[2]).equal(10)
+      expect(percentages[3]).equal(20)
+      expect(percentages[4]).equal(60)
+
       await gachaPool.pause()
       await gachaPool.setPercentage([5, 15, 20, 25, 35])
-      expect(await gachaPool.percentages(0)).equal(5)
-      expect(await gachaPool.percentages(1)).equal(15)
-      expect(await gachaPool.percentages(2)).equal(20)
-      expect(await gachaPool.percentages(3)).equal(25)
-      expect(await gachaPool.percentages(4)).equal(35)
+      const newPercentages = await gachaPool.percentages()
+      expect(newPercentages[0]).equal(5)
+      expect(newPercentages[1]).equal(15)
+      expect(newPercentages[2]).equal(20)
+      expect(newPercentages[3]).equal(25)
+      expect(newPercentages[4]).equal(35)
     })
   })
 })

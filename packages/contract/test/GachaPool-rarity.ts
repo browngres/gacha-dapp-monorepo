@@ -1,5 +1,6 @@
 import { expect } from "chai"
 import { network } from "hardhat"
+import { parseEther } from "ethers"
 
 import type { GachaPool, VRFCoordinatorV2_5Mock } from "../types/ethers-contracts/index.js"
 import gachaPoolModule from "../ignition/modules/GachaPool.js"
@@ -28,7 +29,7 @@ describe("GachaPool Rarity Unit Tests", function () {
         clearTimeout(timer) // 清除超时
         resolve(requestId) // 返回 reqId
       })
-      gachaPool.gachaOne()
+      gachaPool.gachaOne({ value: parseEther("0.1") })
     })
   }
 
@@ -129,7 +130,7 @@ describe("GachaPool Rarity Unit Tests", function () {
     it("correctly gives rarity UR", testRarity([999099n], [0n]))
   })
 
-  describe("Percentages whit only 100% UR", function () {
+  describe("Percentages whit only 100% N", function () {
     before("Pause and set percentages [0, 0, 0, 0, 100]", async function () {
       await gachaPool.pause()
       await gachaPool.setPercentage([0, 0, 0, 0, 100])
