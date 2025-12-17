@@ -121,7 +121,7 @@
 ```json
 {
   "name": "Gacha card NFT",
-  "description": "Gacha card NFT collections created by Rainy with ❤️",
+  "description": "Gacha card NFT collections created by Rainy with ❤️. Pictures by LoveLive SIF Game.",
   "image": "https://external-link-url.com/image.png",
   "external_link": "https://external-link-url.com"
 }
@@ -151,7 +151,10 @@ NFT contractURI
 
 ## 待定功能
 
-- 卡池管理合约，用于创建卡池（创建信标代理）。使用合约工厂部署合约。查看状态，批量暂停。
+- 卡池管理合约，用于创建卡池（创建信标代理）。
+  - 使用合约工厂部署合约。查看状态，批量暂停。
+  - 部署 NFT 合约
+  - （多个卡池公用同一个 NFT 合约）
 - 特权用户（roles 实现）
   - 免费抽
   - 打折抽
@@ -201,3 +204,6 @@ hardhat 3 / ignition 文档中零碎的合约写法。基本上是用到什么�
 VRF 可升级改造
 [Chainlink 可升级改造](https://github.com/smartcontractkit/chainlink/issues/4976)
 [How to implement Chainlink VRFv2 with Upgradeable Transparent Proxy smart contract?](https://ethereum.stackexchange.com/questions/161819/how-to-implement-chainlink-vrfv2-with-upgradeable-transparent-proxy-smart-contra)
+
+ERC721
+[Function _setTokenURI() in ERC721 is gone in OpenZeppelin ^0.8.0 contracts](https://ethereum.stackexchange.com/questions/93917/function-settokenuri-in-erc721-is-gone-in-openzeppelin-0-8-0-contracts)
