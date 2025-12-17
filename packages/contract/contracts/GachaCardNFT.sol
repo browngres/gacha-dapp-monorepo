@@ -9,6 +9,7 @@ contract GachaCardNFT is ERC721, Ownable {
     string private _symbol;
     string private _baseURI;
     string private _contractURI;
+    uint256 private _nextTokenId;
 
     using LibString for uint256;
 
@@ -53,7 +54,8 @@ contract GachaCardNFT is ERC721, Ownable {
     }
 
     /// @dev 只能由 owner 指定稀有度 Mint。
-    function mint(address to, uint256 id, uint8 rarity) external onlyOwner {
+    function mint(address to, uint8 rarity) external onlyOwner {
+        uint256 id = _nextTokenId++;
         _setExtraData(id, rarity);
         _safeMint(to, id);
     }
