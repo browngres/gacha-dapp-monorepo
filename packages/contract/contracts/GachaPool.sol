@@ -49,8 +49,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         uint8 discountGachaTen; // 十连费用折扣，0-100
         bool guarantee; // 是否十连保底机制
         Rarity guaranteeRarity; // 保底稀有度
-        uint8[] percentages; // 稀有度概率
-        //TODO 如果改用定长数组，跟前面的槽位拼凑。是否节省 gas
+        uint8[5] percentages; // 稀有度概率，使用定长数组节省 Gas
     }
 
     struct PoolStorage {
@@ -208,7 +207,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     /// @notice 设置概率
     /// @dev 合约必须处于暂停
-    function setPercentage(uint8[] calldata _percentages) public onlyRole(ADMIN_ROLE) whenPaused {
+    function setPercentage(uint8[5] calldata _percentages) public onlyRole(ADMIN_ROLE) whenPaused {
         _setPercentage(_percentages);
     }
 
@@ -262,7 +261,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         return _getPoolStorage().cfg.guaranteeRarity;
     }
 
-    function percentages() public view returns (uint8[] memory) {
+    function percentages() public view returns (uint8[5] memory) {
         return _getPoolStorage().cfg.percentages;
     }
 
@@ -341,7 +340,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @notice 设置稀有度概率
     /// @param _percentages uint8 数组，从 UR 到 N
     /// @dev 加一起必须是100，如果不要某个，将其概率设置为0
-    function _setPercentage(uint8[] calldata _percentages) private {
+    function _setPercentage(uint8[5] calldata _percentages) private {
         PoolStorage storage $ = _getPoolStorage();
 
         if (_percentages.length != 5) {
@@ -355,6 +354,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
             revert InvalidRarityPercentage();
         }
         for (uint i; i < 5; i++) {
+            /// @dev 如果是变长数组，这里必须用 push，否则报 index 越界
             $.cfg.percentages[i] = _percentages[i];
         }
 
