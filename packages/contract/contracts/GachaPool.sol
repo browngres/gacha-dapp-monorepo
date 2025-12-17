@@ -112,10 +112,10 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         uint32 _supply,
         uint64 _costGwei,
         address _signer,
-        uint8[] calldata _percentages,
-        uint8 _discountGachaTen,
-        bool _guarantee,
-        Rarity _guarantee_rarity
+        uint8[] calldata _percentages
+        // uint8 _discountGachaTen,
+        // bool _guarantee,
+        // Rarity _guarantee_rarity
     ) public initializer {
         // * 访问控制
         __Pausable_init();
@@ -133,9 +133,9 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         supply = _supply;
         costGwei = _costGwei;
         claimSigner = _signer;
-        discountGachaTen = _discountGachaTen;
-        guarantee = _guarantee;
-        guarantee_rarity = _guarantee_rarity;
+        // discountGachaTen = _discountGachaTen;
+        // guarantee = _guarantee;
+        // guarantee_rarity = _guarantee_rarity;
         // 分配概率
         _setPercentage(_percentages);
     }
