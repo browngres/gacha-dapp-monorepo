@@ -50,6 +50,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         bool guarantee; // 是否十连保底机制
         Rarity guaranteeRarity; // 保底稀有度
         uint8[] percentages; // 稀有度概率
+        //TODO 如果改用定长数组，跟前面的槽位拼凑。是否节省 gas
     }
 
     struct PoolStorage {
@@ -80,7 +81,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     // ** GachaPool 配置相关
     /// @dev 大部分状态变量定义成 config，使用 ERC7201 存储布局
     uint32 constant PROCESSING_CAP = 100; // 未结算的请求数量限制
-    address claimSigner; // claim 签名者
+    address public claimSigner; // claim 签名者
 
     // ** GachaPool 记录相关
     /// @dev 映射存储使用 ERC7201 存储布局
@@ -237,16 +238,43 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         return address(COORDINATOR);
     }
 
-    // TODO poolId
-    // TODO supply
-    // TODO costGwei
-    // TODO discountGachaTen
-    // TODO guarantee
-    // TODO claimSigner
-    // TODO guaranteeRarity
-    // TODO percentages // 稀有度概率，返回数组
-    // TODO mapping(uint256 reqId => address roller) public reqToAddress; // 抽卡的地址
-    // TODO mapping(address roller => uint256[] requestIds) public addressToReq; // 地址的抽卡记录
+    function poolId() public view returns (uint32) {
+        return _getPoolStorage().cfg.poolId;
+    }
+
+    function supply() public view returns (uint32) {
+        return _getPoolStorage().cfg.supply;
+    }
+
+    function costGwei() public view returns (uint64) {
+        return _getPoolStorage().cfg.costGwei;
+    }
+
+    function discountGachaTen() public view returns (uint8) {
+        return _getPoolStorage().cfg.discountGachaTen;
+    }
+
+    function guarantee() public view returns (bool) {
+        return _getPoolStorage().cfg.guarantee;
+    }
+
+    function guaranteeRarity() public view returns (Rarity) {
+        return _getPoolStorage().cfg.guaranteeRarity;
+    }
+
+    function percentages() public view returns (uint8[] memory) {
+        return _getPoolStorage().cfg.percentages;
+    }
+
+    /// @notice 根据 reqId 查询抽卡的地址
+    function getPlayer(uint256 reqId) public view returns (address) {
+        return _getPoolStorage().reqToAddress[reqId];
+    }
+
+    /// @notice 根据地址查询抽卡的记录
+    function getRequests(address by) public view returns (uint256[] memory) {
+        return _getPoolStorage().addressToReq[by];
+    }
 
     /// @notice 查询抽卡结果
     /// @param reqId requestId
