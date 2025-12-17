@@ -1,7 +1,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules"
 import VRFModule from "./VRF.js"
 import { parseEther, parseUnits } from "ethers"
-
+import type {GachaPool} from "../../types/ethers-contracts/index.js"
 // beacon 代理方式部署
 // 1. Deploy implementation
 // 2. Deploy beacon
@@ -27,17 +27,23 @@ export const proxyGachaPoolModule = buildModule("ProxyGachaPoolModule", (m) => {
 
   // 准备参数
   const keyHash = "0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc" // 随意，mock 中没用
-  const percentages: number[] = [2, 8, 10, 20, 60]
+  const defaultConfig: GachaPool.PoolConfigStruct = {
+    poolId: 1,
+    supply: 100,
+    costGwei: parseUnits("0.1", "gwei"), // 单次费用 0.1 ether，转换为 gwei
+    discountGachaTen: 90,  // 9折
+    guarantee: true,
+    guaranteeRarity: 1,
+    percentages: [2, 8, 10, 20, 60]
+  }
+
   const initCallData = m.encodeFunctionCall(gachaPool, "initialize", [
     subId,
     VRFMock,
     keyHash,
     deployer,
-    1, // poolId
-    100, // supply
-    parseUnits("0.1", "gwei"), // 单次费用 0.1 ether，转换为 gwei
     deployer, // signer
-    percentages, // 概率
+    defaultConfig
   ])
 
   // 部署 proxy
