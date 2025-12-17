@@ -42,6 +42,24 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         Rarity[] rarity;
     }
 
+    struct PoolConfig {
+        uint32 poolId; // 卡池 id
+        uint32 supply; // 总量，最大抽卡次数
+        uint64 costGwei; // 抽卡费用，单位 Gwei
+        uint8 discountGachaTen; // 十连费用折扣，0-100
+        bool guarantee; // 是否十连保底机制
+        Rarity guaranteeRarity; // 保底稀有度
+        uint8[] percentages; // 稀有度概率
+    }
+
+    struct PoolStorage {
+        PoolConfig cfg;
+        mapping(uint256 reqId => address roller) reqToAddress; // 抽卡的地址
+        mapping(address roller => uint256[] requestIds) addressToReq; // 地址的抽卡记录
+        mapping(uint256 reqId => RandomResult) requests; // 所有结果记录
+        // TODO UR 记录
+    }
+
     using EnumerableSetLib for EnumerableSetLib.Uint256Set;
     using EnumerableSetLib for EnumerableSetLib.AddressSet;
 
@@ -60,28 +78,27 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     IVRFCoordinatorV2Plus COORDINATOR; // VRF coordinator
 
     // ** GachaPool 配置相关
-    // ? 定义成 config
-    uint32 public poolId; // 卡池 id
-    uint32 public supply; // 总量，最大抽卡次数
-    uint64 public costGwei; // 抽卡费用，单位 Gwei
-    uint128 __gap1; // 预留槽位
-    address public claimSigner; // claim 签名者
+    /// @dev 大部分状态变量定义成 config，使用 ERC7201 存储布局
     uint32 constant PROCESSING_CAP = 100; // 未结算的请求数量限制
-    uint8 public discountGachaTen; // 十连费用折扣，0-100
-    bool public guarantee; // 是否十连保底机制
-    Rarity public guaranteeRarity; // 保底稀有度
-    mapping(Rarity => uint8) public percentages; // 稀有度概率
+    address claimSigner; // claim 签名者
 
     // ** GachaPool 记录相关
-    mapping(uint256 reqId => address roller) public reqToAddress; // 抽卡的地址
-    mapping(address roller => uint256[] requestIds) public addressToReq; // 地址的抽卡记录
-    mapping(uint256 reqId => RandomResult) requests; // 所有结果记录
+    /// @dev 映射存储使用 ERC7201 存储布局
     EnumerableSetLib.Uint256Set processingRequests; // 正在进行的 Request，reqId 集合
     EnumerableSetLib.Uint256Set fulfilledRequests; // 已经满足的 Request，reqId 集合
     EnumerableSetLib.Uint256Set claimedRequests; // 已经领取奖励的 Request，reqId 集合
     EnumerableSetLib.AddressSet allPlayers; // 所有玩过的玩家，地址集合
-    // TODO UR 记录
     // TODO 特权地址
+
+    // ** ERC 7201 命名空间存储布局
+    // keccak256(abi.encode(uint256(keccak256("Gacha.pool.storage")) - 1)) & ~bytes32(uint256(0xff));
+    bytes32 private constant POOL_STORAGE_LOCATION = 0x683495bbd89dac7aefd058d15e147e478a054c63354d7884b208de21aad03f00;
+
+    function _getPoolStorage() private pure returns (PoolStorage storage $) {
+        assembly {
+            $.slot := POOL_STORAGE_LOCATION
+        }
+    }
 
     // * 【 自定义错误 】
     error InvalidRarityPercentage();
@@ -108,14 +125,8 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         address _vrfCoordinator,
         bytes32 _keyHash,
         address _admin,
-        uint32 _poolId,
-        uint32 _supply,
-        uint64 _costGwei,
         address _signer,
-        uint8[] calldata _percentages
-        // uint8 _discountGachaTen,
-        // bool _guarantee,
-        // Rarity _guaranteeRarity
+        PoolConfig calldata _initConfig
     ) public initializer {
         // * 访问控制
         __Pausable_init();
@@ -129,27 +140,29 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         __VRFConsumerBaseV2Upgradeable_init(_vrfCoordinator);
         COORDINATOR = IVRFCoordinatorV2Plus(_vrfCoordinator);
         // * GachaPool
-        poolId = _poolId;
-        supply = _supply;
-        costGwei = _costGwei;
+        PoolStorage storage $ = _getPoolStorage();
+        $.cfg.poolId = _initConfig.poolId;
+        $.cfg.supply = _initConfig.supply;
+        $.cfg.costGwei = _initConfig.costGwei;
+        $.cfg.discountGachaTen = _initConfig.discountGachaTen;
+        $.cfg.guarantee = _initConfig.guarantee;
+        $.cfg.guaranteeRarity = _initConfig.guaranteeRarity;
         claimSigner = _signer;
-        // discountGachaTen = _discountGachaTen;
-        // guarantee = _guarantee;
-        // guaranteeRarity = _guaranteeRarity;
         // 分配概率
-        _setPercentage(_percentages);
+        _setPercentage(_initConfig.percentages);
     }
 
     // * 【 public 函数】
 
     /// @notice 单抽
     function gachaOne() public payable whenNotPaused returns (bytes32) {
-        if (msg.value < costGwei * 1 gwei) {
+        PoolStorage storage $ = _getPoolStorage();
+        if (msg.value < $.cfg.costGwei * 1 gwei) {
             revert InsufficientFunds();
         }
         uint256 requestId = _requestRandomWords(1);
-        reqToAddress[requestId] = msg.sender;
-        addressToReq[msg.sender].push(requestId);
+        $.reqToAddress[requestId] = msg.sender;
+        $.addressToReq[msg.sender].push(requestId);
         /// @dev 更新请求的状态为：处理中
         processingRequests.add(requestId, PROCESSING_CAP);
         /// @dev 集合添加会自动去重
@@ -163,12 +176,13 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @notice 十连抽，费用打折
     /// @dev discountGachaTen 90 代表代表9折， 10% off
     function gachaTen() public payable whenNotPaused returns (bytes32) {
-        if (msg.value < (costGwei * 1 gwei * discountGachaTen) / 10) {
+        PoolStorage storage $ = _getPoolStorage();
+        if (msg.value < ($.cfg.costGwei * 1 gwei * $.cfg.discountGachaTen) / 10) {
             revert InsufficientFunds();
         }
         uint256 requestId = _requestRandomWords(10);
-        reqToAddress[requestId] = msg.sender;
-        addressToReq[msg.sender].push(requestId);
+        $.reqToAddress[requestId] = msg.sender;
+        $.addressToReq[msg.sender].push(requestId);
         processingRequests.add(requestId, PROCESSING_CAP);
         allPlayers.add(msg.sender);
         emit GachaTen(msg.sender, requestId);
@@ -200,14 +214,16 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @notice 设置费用
     /// @dev 合约必须处于暂停
     function setCostGwei(uint64 _cost) public onlyRole(ADMIN_ROLE) whenPaused {
-        costGwei = _cost;
+        PoolStorage storage $ = _getPoolStorage();
+        $.cfg.costGwei = _cost;
         emit costGweiChanged(_cost);
     }
 
     /// @notice 设置十连折扣
     /// @dev 合约必须处于暂停
     function setDiscountGachaTen(uint8 _discount) public onlyRole(ADMIN_ROLE) whenPaused {
-        discountGachaTen = _discount;
+        PoolStorage storage $ = _getPoolStorage();
+        $.cfg.discountGachaTen = _discount;
         emit discountGachaTenChanged(_discount);
     }
 
@@ -221,13 +237,24 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         return address(COORDINATOR);
     }
 
+    // TODO poolId
+    // TODO supply
+    // TODO costGwei
+    // TODO discountGachaTen
+    // TODO guarantee
+    // TODO claimSigner
+    // TODO guaranteeRarity
+    // TODO percentages // 稀有度概率，返回数组
+    // TODO mapping(uint256 reqId => address roller) public reqToAddress; // 抽卡的地址
+    // TODO mapping(address roller => uint256[] requestIds) public addressToReq; // 地址的抽卡记录
+
     /// @notice 查询抽卡结果
     /// @param reqId requestId
     /// @return numWords 随机数个数
     /// @return words 随机数数组
     /// @return rarity 稀有度数组
     function getResult(uint256 reqId) public view returns (uint8, uint256[] memory, Rarity[] memory) {
-        RandomResult storage result = requests[reqId];
+        RandomResult storage result = _getPoolStorage().requests[reqId];
         return (result.numWords, result.words, result.rarity);
     }
 
@@ -254,6 +281,8 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @param randomWords randomWords from vrf
     /// @dev never use revert in fulfillRandomWords
     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
+        PoolStorage storage $ = _getPoolStorage();
+
         // 更新请求的状态为：已满足。
         processingRequests.remove(requestId);
         fulfilledRequests.add(requestId);
@@ -270,13 +299,13 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         result.rarity = getRandomRarity(randomWords);
 
         // 保底机制，修改数组中的最后一个
-        if (result.numWords == 10 && guarantee) {
+        if (result.numWords == 10 && $.cfg.guarantee) {
             result.words[9] = 0;
-            result.rarity[9] = guaranteeRarity;
-            emit Guaranteed(requestId, guaranteeRarity);
+            result.rarity[9] = $.cfg.guaranteeRarity;
+            emit Guaranteed(requestId, $.cfg.guaranteeRarity);
         }
 
-        requests[requestId] = result;
+        $.requests[requestId] = result;
         // console.log("now ready to emit");
         emit RandomFulfilled(requestId, randomWords);
     }
@@ -285,6 +314,8 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @param _percentages uint8 数组，从 UR 到 N
     /// @dev 加一起必须是100，如果不要某个，将其概率设置为0
     function _setPercentage(uint8[] calldata _percentages) private {
+        PoolStorage storage $ = _getPoolStorage();
+
         if (_percentages.length != 5) {
             revert InvalidRarityPercentage();
         }
@@ -296,8 +327,9 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
             revert InvalidRarityPercentage();
         }
         for (uint i; i < 5; i++) {
-            percentages[Rarity(i)] = _percentages[i];
+            $.cfg.percentages[i] = _percentages[i];
         }
+
         emit PercentageChanged();
     }
 
@@ -306,6 +338,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @return rarity 随机数的稀有度，数组
     /// @dev 从后往前遍历（N->R->SR->SSR->UR），概率大的先判断
     function getRandomRarity(uint256[] calldata randomWords) private view returns (Rarity[] memory rarity) {
+        PoolStorage storage $ = _getPoolStorage();
         uint256 length = randomWords.length;
         rarity = new Rarity[](length);
         for (uint i = 0; i < length; i++) {
@@ -313,7 +346,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
             // console.log("word:", word);
             uint8 cumulative = 0;
             for (uint8 j = 4; j >= 0; j--) {
-                cumulative += percentages[Rarity(j)];
+                cumulative += $.cfg.percentages[j];
                 // console.log("cumulative:", cumulative);
                 if (word <= cumulative) {
                     rarity[i] = Rarity(j);
