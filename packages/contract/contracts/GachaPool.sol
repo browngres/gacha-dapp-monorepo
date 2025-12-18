@@ -114,8 +114,8 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     event RandomFulfilled(uint256 indexed requestId, uint256[] randomWords);
     event Guaranteed(uint256 indexed requestId, Rarity);
     event PercentageChanged();
-    event costGweiChanged(uint64 costGwei);
-    event discountGachaTenChanged(uint8 discount);
+    event CostGweiChanged(uint64 costGwei);
+    event DiscountGachaTenChanged(uint8 discount);
     event GuaranteeChanged(bool guarantee);
     event GuaranteeRarityChanged(Rarity level);
     event Withdraw(address indexed withdrawer, uint value, uint timestamp); // 提款者，数量，时间
@@ -224,7 +224,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     function setCostGwei(uint64 _cost) public onlyRole(ADMIN_ROLE) whenPaused {
         PoolStorage storage $ = _getPoolStorage();
         $.cfg.costGwei = _cost;
-        emit costGweiChanged(_cost);
+        emit CostGweiChanged(_cost);
     }
 
     /// @notice 设置十连折扣
@@ -236,7 +236,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
             revert InvalidDiscount();
         }
         $.cfg.discountGachaTen = _discount;
-        emit discountGachaTenChanged(_discount);
+        emit DiscountGachaTenChanged(_discount);
     }
 
     /// @notice 设置是否保底
