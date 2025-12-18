@@ -21,7 +21,6 @@
         "@types/bun": "latest",
         "@types/react": "^19",
         "@types/react-dom": "^19",
-        "@wagmi/connectors": "7.0.2",
         "bun-plugin-tailwind": "^0.1.2",
         "daisyui": "^5.5.14",
         "react": "^19",

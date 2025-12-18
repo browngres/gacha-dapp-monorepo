@@ -12,11 +12,13 @@ import { App } from "./App";
 // Rainbowkit 相关
 import "@rainbow-me/rainbowkit/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider } from "wagmi";
-import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { createConfig, WagmiProvider, http } from "wagmi";
+import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { rainbowWallet, metaMaskWallet } from "@rainbow-me/rainbowkit/wallets";
+import { connectorsForWallets } from "@rainbow-me/rainbowkit";
 
 // chains
-import { defineChain } from "viem";
+import { defineChain, createClient } from "viem";
 
 const ganache_test = defineChain({
   id: 1337,
@@ -38,12 +40,28 @@ const ganache_test = defineChain({
   contracts: {},
 });
 
-const config = getDefaultConfig({
-  appName: "Gacha App",
-  projectId: "YOUR_PROJECT_ID",
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: "Recommended",
+      wallets: [rainbowWallet, metaMaskWallet],
+    },
+  ],
+  {
+    appName: "Gacha App",
+    projectId: "YOUR_PROJECT_ID",
+  },
+);
+
+const config = createConfig({
+  // chains: [mainnet, sepolia],
   chains: [ganache_test],
+  connectors: connectors,
+
   ssr: true, // If your dApp uses server side rendering (SSR)
+  transports: { [ganache_test.id]: http() },
 });
+
 const queryClient = new QueryClient();
 
 const app = (
