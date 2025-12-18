@@ -2,14 +2,14 @@ import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mo
 import { defineConfig } from "hardhat/config"
 import dotenv from "dotenv"
 
-// 指定绝对路径，防止不同位置找不到 .env，比如 solidity 插件只会在根目录
+// 指定绝对路径，防止不同位置找不到 .env，比如 solidity 插件工作目录不同
 import { fileURLToPath } from 'url';
 import { dirname,resolve } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 dotenv.config({ path: resolve(__dirname, ".env") })
 
-
+// 实际上可以不用 dotenv，Bun 已经内置了。但是 hardhat 的 vscode 插件使用不了 bun，报错会阻断插件功能，所以这个文件还得用。
 const { GANACHE_RPC_MAIN, GANACHE_RPC_TEST } = process.env
 
 export default defineConfig({

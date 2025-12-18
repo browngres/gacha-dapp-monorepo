@@ -102,17 +102,21 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     // * 【 自定义错误 】
     error InvalidRarityPercentage();
+    error InvalidDiscount();
     error InsufficientFunds();
+    error CannotPause();
 
     // * 【 自定义事件 】
     event GachaOne(address indexed who, uint256 requestId);
     event GachaTen(address indexed who, uint256 requestId);
     event RandomRequested(uint256 indexed requestId);
     event RandomFulfilled(uint256 indexed requestId, uint256[] randomWords);
+    event Guaranteed(uint256 indexed requestId, Rarity);
     event PercentageChanged();
     event costGweiChanged(uint64 costGwei);
     event discountGachaTenChanged(uint8 discount);
-    event Guaranteed(uint256 indexed requestId, Rarity);
+    event GuaranteeChanged(bool guarantee);
+    event GuaranteeRarityChanged(Rarity level);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -197,7 +201,9 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     // * 【 admin 函数】
 
     function pause() public onlyRole(PAUSER_ROLE) {
-        // TODO 如果有正在请求的随机数，不能暂停
+        if (processingRequests.length() > 0) {
+            revert CannotPause();
+        }
         _pause();
     }
 
@@ -221,10 +227,30 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     /// @notice 设置十连折扣
     /// @dev 合约必须处于暂停
+    /// @dev 0代表免费，100代表不打折，90代表9折，等同于10% off
     function setDiscountGachaTen(uint8 _discount) public onlyRole(ADMIN_ROLE) whenPaused {
         PoolStorage storage $ = _getPoolStorage();
+        if (_discount > 100) {
+            revert InvalidDiscount();
+        }
         $.cfg.discountGachaTen = _discount;
         emit discountGachaTenChanged(_discount);
+    }
+
+    /// @notice 设置是否保底
+    /// @dev 合约必须处于暂停
+    function setGuarantee(bool _guarantee) public onlyRole(ADMIN_ROLE) whenPaused {
+        PoolStorage storage $ = _getPoolStorage();
+        $.cfg.guarantee = _guarantee;
+        emit GuaranteeChanged(_guarantee);
+    }
+
+    /// @notice 设置保底等级
+    /// @dev 合约必须处于暂停
+    function setGuaranteeRarity(Rarity _level) public onlyRole(ADMIN_ROLE) whenPaused {
+        PoolStorage storage $ = _getPoolStorage();
+        $.cfg.guaranteeRarity = _level;
+        emit GuaranteeRarityChanged(_level);
     }
 
     /// 提取余额
