@@ -105,6 +105,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     error InvalidDiscount();
     error InsufficientFunds();
     error CannotPause();
+    error WithdrawFailed(uint balance);
 
     // * 【 自定义事件 】
     event GachaOne(address indexed who, uint256 requestId);
@@ -117,6 +118,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     event discountGachaTenChanged(uint8 discount);
     event GuaranteeChanged(bool guarantee);
     event GuaranteeRarityChanged(Rarity level);
+    event Withdraw(address indexed withdrawer, uint value, uint timestamp); // 提款者，数量，时间
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -253,8 +255,18 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         emit GuaranteeRarityChanged(_level);
     }
 
-    /// 提取余额
-    // function withdraw() onlyRole(ADMIN_ROLE) returns () {}
+    /// @notice 提取余额
+    function withdraw() public onlyRole(ADMIN_ROLE) {
+        uint balance = address(this).balance;
+        if (balance == 0) {
+            revert WithdrawFailed(balance);
+        }
+        (bool callSuccess, ) = payable(msg.sender).call{value: balance}("");
+        if (!callSuccess) {
+            revert WithdrawFailed(balance);
+        }
+        emit Withdraw(msg.sender, balance, block.timestamp);
+    }
 
     // * 【 view 函数】
     /// @notice 返回使用的 VRF 合约地址
