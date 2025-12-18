@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@plugin "daisyui"{
+  themes: valentine --default, dark --prefersdark;
+}
 
 @layer base {
   :root {

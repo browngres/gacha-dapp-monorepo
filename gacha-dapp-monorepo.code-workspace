@@ -7,11 +7,13 @@
   "settings": {
     "cSpell.words": [
       "Chainlink",
+      "daisyui",
       "dotenv",
       "gacha",
       "Initializable",
       "IVRF",
       "keccak",
+      "llms",
       "Merkle",
       "rainbowkit",
       "Reentrancy",
