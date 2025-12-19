@@ -6,14 +6,11 @@
   "scripts": {
     "dev": "bun --hot src/server/index.ts",
     "start": "NODE_ENV=production bun src/server/index.ts",
-    "build": "bun run build.ts"
+    "bundle": "bun run build.ts"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.10",
     "@tanstack/react-query": "^5.90.12",
-    "@types/bun": "latest",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
     "bun-plugin-tailwind": "^0.1.2",
     "daisyui": "^5.5.14",
     "react": "^19",
