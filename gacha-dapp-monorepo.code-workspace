@@ -24,5 +24,7 @@
     "prettier.tabWidth": 2,
     "editor.formatOnSave": false,
     "editor.tabSize": 2,
+    "livePreview.autoRefreshPreview": "Never",
+    "livePreview.serverRoot": "./packages/app/dist",
   },
 }
