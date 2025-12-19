@@ -13,11 +13,9 @@ import { App } from "./App";
 import "@rainbow-me/rainbowkit/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createConfig, WagmiProvider, http } from "wagmi";
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import { rainbowWallet, metaMaskWallet } from "@rainbow-me/rainbowkit/wallets";
-import { connectorsForWallets } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, connectorsForWallets } from "@rainbow-me/rainbowkit";
+// import { rainbowWallet, metaMaskWallet } from "@rainbow-me/rainbowkit/wallets";
 
-// chains
 import { defineChain, createClient } from "viem";
 
 const ganache_test = defineChain({
@@ -30,7 +28,7 @@ const ganache_test = defineChain({
   },
   rpcUrls: {
     default: {
-      http: [Bun.env.GANACHE_RPC_TEST!],
+      http: [process.env.GANACHE_RPC_TEST!],
       // webSocket: [''],
     },
   },
@@ -40,11 +38,12 @@ const ganache_test = defineChain({
   contracts: {},
 });
 
+/*
 const connectors = connectorsForWallets(
   [
     {
       groupName: "Recommended",
-      wallets: [rainbowWallet, metaMaskWallet],
+      wallets: [rainbowWallet],
     },
   ],
   {
@@ -52,12 +51,12 @@ const connectors = connectorsForWallets(
     projectId: "YOUR_PROJECT_ID",
   },
 );
+*/
 
 const config = createConfig({
-  // chains: [mainnet, sepolia],
   chains: [ganache_test],
-  connectors: connectors,
-
+  // 不指定 connectors 的话，自动检测已经安装的钱包
+  // connectors: connectors,
   ssr: true, // If your dApp uses server side rendering (SSR)
   transports: { [ganache_test.id]: http() },
 });
