@@ -21,7 +21,8 @@
     {
       "files": ["*.tsx"],
       "options": {
-        "semi": true
+        "semi": true,
+        "printWidth": 120
       }
     }
   ]

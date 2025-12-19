@@ -4,11 +4,12 @@ import "./index.css";
 import logo from "./logo.svg";
 import reactLogo from "./react.svg";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-
+import { SendTransaction } from './send-tx'
 export function App() {
   return (
     <div className="max-w-7xl mx-auto p-8 text-center relative z-10">
       <ConnectButton />
+      <SendTransaction/>
       <div className="flex justify-center items-center gap-8 mb-8">
         <img
           src={logo}
