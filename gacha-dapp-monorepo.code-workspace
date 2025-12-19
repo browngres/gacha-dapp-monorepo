@@ -18,7 +18,9 @@
       "rainbowkit",
       "Reentrancy",
       "solady",
+      "viem",
       "VRFV",
+      "wagmi",
       "Waifu"
     ],
     "prettier.tabWidth": 2,
