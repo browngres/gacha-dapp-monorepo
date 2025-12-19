@@ -3,7 +3,7 @@
   "useTabs": false,
   "semi": false,
   "singleQuote": false,
-  "jsxSingleQuote": true,
+  "jsxSingleQuote": false,
   "overrides": [
     {
       "files": ["*.ts", "*.js"],

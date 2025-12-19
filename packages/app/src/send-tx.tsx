@@ -16,16 +16,23 @@ export function SendTransaction() {
 
   return (
     <form onSubmit={submit}>
-      <input className='input' name='address' placeholder='0xA0Cf…251e' required />
-      <input className='input' name='value' placeholder='0.05' required />
-      <button className='btn' disabled={sendTransaction.isPending} type='submit'>
-        {sendTransaction.isPending ? "Confirming..." : "Send"}
-      </button>
-      {sendTransaction.data && <div className='alert alert alert-info'>Transaction Hash: {sendTransaction.data}</div>}
-      {result.isLoading && <div className='alert alert-info'>Waiting for confirmation...</div>}
-      {result.isSuccess && <div className='alert alert-success'>Transaction confirmed.</div>}
+      <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+        <legend className="fieldset-legend">Send tx</legend>
+
+        <label className="label">Address</label>
+        <input className="input" name="address" placeholder="0xA0Cf…251e" required />
+
+        <label className="label">Value</label>
+        <input className="input" name="value" placeholder="0.05" required />
+        <button className="btn btn-primary" disabled={sendTransaction.isPending} type="submit">
+          {sendTransaction.isPending ? "Confirming..." : "Send"}
+        </button>
+      </fieldset>
+      {sendTransaction.data && <div className="alert alert-soft alert-info">Transaction: {sendTransaction.data}</div>}
+      {result.isLoading && <div className="alert alert-soft alert-info">Waiting for confirmation...</div>}
+      {result.isSuccess && <div className="alert alert-soft alert-success">Transaction confirmed.</div>}
       {sendTransaction.error && (
-        <div className='alert'>
+        <div className="alert alert-soft alert-error">
           Error: {(sendTransaction.error as BaseError).shortMessage || sendTransaction.error.message}
         </div>
       )}
