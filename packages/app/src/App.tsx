@@ -1,13 +1,13 @@
-import { APITester } from "./APITester";
-import "./index.css";
+import { APITester } from "./components/APITester";
+import "./styles/index.css";
 
-import logo from "./logo.svg";
-import reactLogo from "./react.svg";
+import logo from "./public/logo.svg";
+import reactLogo from "./public/react.svg";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { SendTransaction } from "./send-tx";
+import { SendTransaction } from "./components/send-tx";
 export function App() {
   return (
-    <div>
+    <div className="min-h-[800px]">
       <div className="navbar bg-base-100 shadow-sm">
         <div className="navbar-start">
           <a className="btn btn-ghost text-xl">daisyUI</a>
