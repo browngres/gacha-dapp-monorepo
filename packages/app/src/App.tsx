@@ -34,11 +34,15 @@ export function App() {
           </div>
         </div>
         <div className="navbar-end">
+          <label className="flex cursor-pointer gap-2 pr-4">
+            <span className="label-text">dark</span>
+            <input type="checkbox" value="dark" className="toggle theme-controller" />
+          </label>
           <ConnectButton />
         </div>
       </div>
 
-      <div className="container-sm mx-auto p-8 text-center relative z-10">
+      <div className="container-sm mx-auto py-8 text-center relative z-10">
         <div className="tabs tabs-box min-w-3xl">
           <input type="radio" name="my_tabs_1" className="tab" aria-label="Gacha" />
           <div className="tab-content bg-base-100 border-base-300 p-6">
@@ -46,7 +50,7 @@ export function App() {
           </div>
 
           <input type="radio" name="my_tabs_1" className="tab" aria-label="Claim" />
-          <div className="tab-content bg-base-100 border-base-300 p-6">Tab content 2</div>
+          <div className="tab-content bg-base-100 border-base-300 p-6"></div>
 
           <input type="radio" name="my_tabs_1" className="tab" aria-label="Admin" defaultChecked />
           <div className="tab-content bg-base-100 border-base-300 p-6">
