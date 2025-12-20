@@ -38,3 +38,8 @@ bookmarks.json
 
 # cline
 .clinerules
+
+# db
+db
+*.db
+*.sqlite

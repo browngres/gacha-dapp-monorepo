@@ -10,7 +10,7 @@
 抽卡后马上知道结果。
 十连费用打折
 十连有保底
-后端签名 + merkle tree 双重验证
+后端签名
 
 ### 合约架构
 
@@ -25,11 +25,19 @@
 ### 流程
 
 1. 创建卡池，编号，总量，概率，单次费用。 pool
-2. 抽卡界面：用户调用抽卡方法，合约发出随机数请求。
-3. 后端监控链上 VRF Mock 事件，向 VRF Mock 写入随机数。VRF Mock 给到卡池
-4. 后端返回前端 requestId、签名(地址+requestId)
-5. 兑奖界面：用户连接钱包，向合约发出请求，提供签名、requestId。
-6. 合约验证签名后，mint nft
+2. 抽卡界面：用户调用抽卡方法，发起交易，合约发出随机数请求。
+3. 前端从交易结果中得到 requestId，向后端提供地址 + requestId + poolId
+4. 后端签名(地址 + requestId + poolId)，并返回前端。
+5. 合约处（独立于前端、后端）监控链上 VRF Mock 事件，向 VRF Mock 写入随机数。VRF Mock 给到卡池
+6. 兑奖界面：用户连接钱包，向合约发出请求，提供签名、requestId。
+7. 合约验证签名后，mint nft
+
+发起抽卡交易后，前端显示四个步骤：
+
+1. 等待交易结果
+2. 等待签名
+3. 等待随机数满足
+4. 读取结果
 
 ### 随机数 feed
 
@@ -81,7 +89,7 @@
 **其他**
 
 - create2 salt `keccak256("Gacha.GachaPool.<PoolId>")`
-- 签名：后端对“地址+ requestId”消息签名
+- 签名：后端对“地址 + requestId + poolId”消息签名
 
 ### NFT Scheme
 
@@ -138,6 +146,7 @@
 - 不要重写 `rawFulfillRandomness`
 
 后端私钥安全
+
 - admin 应该使用多签钱包
 
 ### 随机数生命周期
@@ -167,6 +176,7 @@ NFT contractURI
 - [ ] 前端抽卡特效
 - [ ] “我的” NFT 显示面板
 - [ ] NFT hover-3d, indicator(Rarity)
+- [ ] winston logger
 
 ### 合约
 
