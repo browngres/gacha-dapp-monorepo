@@ -25,13 +25,11 @@
 ### 流程
 
 1. 创建卡池，编号，总量，概率，单次费用。 pool
-2. 抽卡界面：用户调用抽卡方法，合约发出随机数请求。返回一个抽卡码。
+2. 抽卡界面：用户调用抽卡方法，合约发出随机数请求。
 3. 后端监控链上 VRF Mock 事件，向 VRF Mock 写入随机数。VRF Mock 给到卡池
-4. 后端返回前端 requestId、签名
-5. 系统后端将 “地址+requestId” 数据写入 merkle tree
-6. 兑奖界面：用户连接钱包，向后台请求 proof 。
-7. 用户调用合约的兑奖方法，提供 proof，签名。
-8. 合约验证 proof 和签名后，mint nft
+4. 后端返回前端 requestId、签名(地址+requestId)
+5. 兑奖界面：用户连接钱包，向合约发出请求，提供签名、requestId。
+6. 合约验证签名后，mint nft
 
 ### 随机数 feed
 
@@ -83,9 +81,7 @@
 **其他**
 
 - create2 salt `keccak256("Gacha.GachaPool.<PoolId>")`
-- 抽卡码`keccak256("Gacha.<address>.<poolId>.<requestId>")`，发出请求后返回
 - 签名：后端对“地址+ requestId”消息签名
-- Merkle Tree leaf: bytes.concat(keccak256(abi.encode(address, poolId, reqId)))
 
 ### NFT Scheme
 
@@ -143,14 +139,12 @@
 
 后端私钥安全
 - admin 应该使用多签钱包
-- 单独 role 写入 merkle root，权限较小
 
 ### 随机数生命周期
 
 ### 后端
 
 bun + sqlite 记录抽卡序号
-记录 merkle tree
 NFT Token URI
 NFT contractURI
 

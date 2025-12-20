@@ -20,7 +20,6 @@
 - dapp 前后端
 - hardhat 3 ignition
 - 信标代理
-- Merkle Tree 校验数据存在性
 - 在合约调用其他合约
 - Chainlink VRF
 - 在开发测试中 Mock 合约
@@ -53,6 +52,8 @@ wagmi 文档中列出来的[钱包连接器](https://wagmi.sh/react/guides/conne
 
 2025-12-19 今天做了新的实验。证明不是 rainbowkit 的问题。问题来自于 bun 的 dev server。它的运行过程会解析所有导入。如果用 bun 的 bundler 可以直接将可选依赖添加到 external。但是 dev server 没有这个功能。又想用 dev server，因为不用每次 build。不过 dev server 可以添加插件，像 bundler 一样。 使用 onResolve 就可以曲线救国。使用解析时检测到可选依赖就用空白替代。
 
+2025-12-20 经过深思熟虑，抽卡然后 mint NFT 的流程，并不适合 merkle tree。因为这种不是事先构造好的树（白名单），或者后端非实时性的名单。频繁添加 leaf，马上使用其 proof，没有太大意义。于是决定从设计中移除 merkle。
+
 ### 参考资料
 
 #### 文档
@@ -73,7 +74,6 @@ wagmi 文档中列出来的[钱包连接器](https://wagmi.sh/react/guides/conne
 
 - [BeaconProxy](https://docs.openzeppelin.com/contracts/5.x/api/proxy#beaconproxy)
 - [Using with Hardhat | OpenZeppelin Docs](https://docs.openzeppelin.com/upgrades-plugins/hardhat-upgrades)
-- [WTF Solidity 极简入门: 36. 默克尔树 Merkle Tree](https://github.com/AmazingAng/WTF-Solidity/blob/main/36_MerkleTree/readme.md)
 - [Writing Upgradeable Contracts](https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable)
 - [What does `_disableInitializers();` function mean?](https://forum.openzeppelin.com/t/what-does-disableinitializers-function-mean/28730)
 
