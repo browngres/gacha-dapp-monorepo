@@ -5,7 +5,8 @@ import logo from "./public/logo.svg";
 import reactLogo from "./public/react.svg";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SendTransaction } from "./components/send-tx";
-import { ReadCost } from "./components/read-cost";
+
+import { GachaTab } from "./components/gachaTab";
 
 export function App() {
   return (
@@ -44,15 +45,18 @@ export function App() {
 
       <div className="container-sm mx-auto py-8 text-center relative z-10">
         <div className="tabs tabs-box min-w-3xl">
-          <input type="radio" name="my_tabs_1" className="tab" aria-label="Gacha" />
+          <input type="radio" name="my_tabs_1" className="tab" aria-label="Gacha" defaultChecked/>
           <div className="tab-content bg-base-100 border-base-300 p-6">
-            <ReadCost />
+            <GachaTab />
           </div>
 
           <input type="radio" name="my_tabs_1" className="tab" aria-label="Claim" />
           <div className="tab-content bg-base-100 border-base-300 p-6"></div>
 
-          <input type="radio" name="my_tabs_1" className="tab" aria-label="Admin" defaultChecked />
+          <input type="radio" name="my_tabs_1" className="tab" aria-label="Mine" />
+          <div className="tab-content bg-base-100 border-base-300 p-6"></div>
+
+          <input type="radio" name="my_tabs_1" className="tab" aria-label="Admin" />
           <div className="tab-content bg-base-100 border-base-300 p-6">
             <SendTransaction />
           </div>

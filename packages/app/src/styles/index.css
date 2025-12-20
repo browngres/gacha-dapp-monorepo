@@ -1,6 +1,8 @@
 @import "tailwindcss";
-@plugin "daisyui"{
-  themes: valentine --default, dark --prefersdark;
+@plugin "daisyui" {
+  themes:
+    valentine --default,
+    dark --prefersdark;
 }
 
 @layer base {
@@ -50,4 +52,8 @@ body::before {
   ::after {
     animation: none !important;
   }
+}
+
+@utility stat {
+  padding-inline: 0;
 }

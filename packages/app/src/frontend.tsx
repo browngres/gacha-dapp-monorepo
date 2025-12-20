@@ -1,10 +1,3 @@
-/**
- * This file is the entry point for the React app, it sets up the root
- * element and renders the App component to the DOM.
- *
- * It is included in `src/index.html`.
- */
-
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
@@ -32,10 +25,6 @@ const ganache_test = defineChain({
       // webSocket: [''],
     },
   },
-  blockExplorers: {
-    default: { name: "BlockScout Explorer", url: "http://127.0.0.1:9080" },
-  },
-  contracts: {},
 });
 
 /*
@@ -60,6 +49,12 @@ const config = createConfig({
   ssr: true, // If your dApp uses server side rendering (SSR)
   transports: { [ganache_test.id]: http() },
 });
+
+declare module 'wagmi' {
+  interface Register {
+    config: typeof config
+  }
+}
 
 const queryClient = new QueryClient();
 
