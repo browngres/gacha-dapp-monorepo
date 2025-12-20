@@ -50,9 +50,9 @@ const config = createConfig({
   transports: { [ganache_test.id]: http() },
 });
 
-declare module 'wagmi' {
+declare module "wagmi" {
   interface Register {
-    config: typeof config
+    config: typeof config;
   }
 }
 

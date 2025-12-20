@@ -31,7 +31,12 @@ export function PoolInfoCard() {
   });
 
   const [_poolId, _costGwei, _percentages, _discountGachaTen] = data || [];
-  if (isPending) return <div>Loading...</div>;
+  if (isPending)
+    return (
+      <div>
+        <span className="loading loading-bars loading-xl"></span> Loading...
+      </div>
+    );
   if (error) return <div>Error: {(error as BaseError).shortMessage || error.message}</div>;
 
   const poolId = _poolId?.status == "success" ? _poolId.result.toString() : "";
@@ -90,10 +95,14 @@ export function PoolInfoCard() {
         </div>
         <progress className="progress w-56 mx-auto" value={0} max="100"></progress>
         {/* 单抽、十连按钮 */}
-        <div>discountGachaTen: {discountGachaTen}</div>
         <div className="card-actions flex justify-between my-2 mx-6">
           <button className="btn btn-primary">GachaOne</button>
-          <button className="btn btn-accent">GachaTen</button>
+          <div className="indicator">
+            <span className="indicator-item badge badge-soft badge-success italic">
+              {100 - Number(discountGachaTen)}% off!
+            </span>
+            <button className="btn btn-accent">GachaTen</button>
+          </div>
         </div>
       </div>
     </div>

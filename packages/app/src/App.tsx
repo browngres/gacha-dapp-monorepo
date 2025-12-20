@@ -45,7 +45,7 @@ export function App() {
 
       <div className="container-sm mx-auto py-8 text-center relative z-10">
         <div className="tabs tabs-box min-w-3xl">
-          <input type="radio" name="my_tabs_1" className="tab" aria-label="Gacha" defaultChecked/>
+          <input type="radio" name="my_tabs_1" className="tab" aria-label="Gacha" defaultChecked />
           <div className="tab-content bg-base-100 border-base-300 p-6">
             <GachaTab />
           </div>
