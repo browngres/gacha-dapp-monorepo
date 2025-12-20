@@ -6,6 +6,7 @@
   ],
   "settings": {
     "cSpell.words": [
+      "bunx",
       "Chainlink",
       "daisyui",
       "dotenv",
@@ -28,5 +29,8 @@
     "editor.tabSize": 2,
     "livePreview.autoRefreshPreview": "Never",
     "livePreview.serverRoot": "./packages/app/dist",
+    "files.associations": {
+      "*.css": "tailwindcss"
+    },
   },
 }

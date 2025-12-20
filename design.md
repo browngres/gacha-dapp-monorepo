@@ -85,6 +85,7 @@
 - create2 salt `keccak256("Gacha.GachaPool.<PoolId>")`
 - 抽卡码`keccak256("Gacha.<address>.<poolId>.<requestId>")`，发出请求后返回
 - 签名：后端对“地址+ requestId”消息签名
+- Merkle Tree leaf: bytes.concat(keccak256(abi.encode(address, poolId, reqId)))
 
 ### NFT Scheme
 
@@ -140,6 +141,10 @@
 - `fulfillRandomWords` 不得 revert
 - 不要重写 `rawFulfillRandomness`
 
+后端私钥安全
+- admin 应该使用多签钱包
+- 单独 role 写入 merkle root，权限较小
+
 ### 随机数生命周期
 
 ### 后端
@@ -164,9 +169,10 @@ NFT contractURI
 
 ### 前端
 
-- [ ] 基本的前端界面
+- [x] 基本的前端界面
 - [ ] 前端抽卡特效
 - [ ] “我的” NFT 显示面板
+- [ ] NFT hover-3d, indicator(Rarity)
 
 ### 合约
 
@@ -175,7 +181,6 @@ NFT contractURI
   - [x] 信标代理
   - [ ] ReentranceGuard
 - [ ] 编写测试
-  - [ ] 让测试兼容 hardhat 和 ganache（after 清理部署文件夹）
 - [ ] 给合约代码添加 NatSpec 注释
 - [ ] 按照风格指南整理合约代码
 - [ ] 检查修饰符(role, pause, reentrance)
@@ -206,4 +211,9 @@ VRF 可升级改造
 [How to implement Chainlink VRFv2 with Upgradeable Transparent Proxy smart contract?](https://ethereum.stackexchange.com/questions/161819/how-to-implement-chainlink-vrfv2-with-upgradeable-transparent-proxy-smart-contra)
 
 ERC721
-[Function _setTokenURI() in ERC721 is gone in OpenZeppelin ^0.8.0 contracts](https://ethereum.stackexchange.com/questions/93917/function-settokenuri-in-erc721-is-gone-in-openzeppelin-0-8-0-contracts)
+[`Function _setTokenURI() in ERC721 is gone in OpenZeppelin ^0.8.0 contracts`](https://ethereum.stackexchange.com/questions/93917/function-settokenuri-in-erc721-is-gone-in-openzeppelin-0-8-0-contracts)
+
+NFT 合约参考 0GLunarian NFT 合约
+
+前端参考
+[ERC20-Airdop-with-Merkle-Trees-Wagmi-V2-RainbowKit-V2](https://github.com/BenBktech/ERC20-Airdop-with-Merkle-Trees-Wagmi-V2-RainbowKit-V2)

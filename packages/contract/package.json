@@ -25,6 +25,7 @@
     "compile": "bunx hardhat compile",
     "test": "bunx hardhat test",
     "ignition:vrf": "bunx hardhat ignition deploy ./ignition/modules/VRF.ts --network 'ganache_test' --deployment-id 'VRF-on-ganache_test' --build-profile 'ganache'",
-    "ignition:gacha": "bunx hardhat ignition deploy ./ignition/modules/GachaPool.ts --network 'ganache_test' --deployment-id 'GachaPool-on-ganache_test' --build-profile 'ganache'"
+    "ignition:gacha": "bunx hardhat ignition deploy ./ignition/modules/GachaPool.ts --network 'ganache_test' --deployment-id 'GachaPool-on-ganache_test' --build-profile 'ganache'",
+    "feed-vrf": "bun run ./scripts/feedVRF.ts"
   }
 }
