@@ -1,10 +1,9 @@
-import * as React from "react";
+import { type FormEvent } from "react";
 import { type BaseError, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { parseEther } from "viem";
-
 export function SendTransaction() {
   const sendTransaction = useSendTransaction();
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const to = formData.get("address") as `0x${string}`;

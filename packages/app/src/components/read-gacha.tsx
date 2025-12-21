@@ -1,13 +1,31 @@
 import { formatUnits } from "viem";
-import { useReadContract } from "wagmi";
+import { useReadContracts } from "wagmi";
 import { CA, ABI } from "../public/GachaPoolContract";
 
-export function GachaCost() {
-  const { data: costGwei } = useReadContract({
-    address: CA,
-    abi: ABI,
-    functionName: "costGwei",
+export function getPoolInfo() {
+  const { data, error, isPending } = useReadContracts({
+    contracts: [
+      {
+        address: CA,
+        abi: ABI,
+        functionName: "poolId",
+      },
+      {
+        address: CA,
+        abi: ABI,
+        functionName: "costGwei",
+      },
+      {
+        address: CA,
+        abi: ABI,
+        functionName: "percentages",
+      },
+      {
+        address: CA,
+        abi: ABI,
+        functionName: "discountGachaTen",
+      },
+    ],
   });
-  const cost = costGwei ? formatUnits(costGwei, 9) : "";
-  return cost;
+  return { data, error, isPending };
 }

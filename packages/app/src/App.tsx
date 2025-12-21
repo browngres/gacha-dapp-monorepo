@@ -10,8 +10,8 @@ import { GachaTab } from "./components/gachaTab";
 
 export function App() {
   return (
-    <div className="min-h-[800px]">
-      <div className="navbar bg-base-100 shadow-sm min-w-5xl">
+    <div className="min-h-[800px]  w-5xl">
+      <div className="navbar bg-base-100 shadow-sm">
         <div className="navbar-start">
           <h1 className="btn btn-ghost text-xl font-bold my-2 leading-tight">Bun + React + daisyUI</h1>
         </div>
