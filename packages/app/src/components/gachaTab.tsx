@@ -1,16 +1,16 @@
-import { type BaseError } from "wagmi";
-
+import { useConnection, useWatchContractEvent, type BaseError } from "wagmi";
 import { formatUnits } from "viem";
-import { getPoolInfo } from "./read-gacha";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { usePoolInfo } from "./read-gacha";
 import { GachaStepOne } from "./gacha-step-one";
+import { ABI, CA } from "@/public/GachaPoolContract";
 
 export function PoolInfoCard({ setIsBlurred, setIsTen }) {
   // 卡池展示
   // TODO 将来从 pool manager 读取 pool 信息
-  const { data, error, isPending, isSuccess } = getPoolInfo();
+  const { data, error, isPending, isSuccess } = usePoolInfo();
   const [_poolId, _costGwei, _percentages, _discountGachaTen] = data || [];
-  
+
   if (isPending)
     return (
       <div>
@@ -22,7 +22,6 @@ export function PoolInfoCard({ setIsBlurred, setIsTen }) {
   const poolId = isSuccess ? _poolId.result.toString() : "";
   const cost = isSuccess ? formatUnits(_costGwei.result, 9) : "";
   const percentages = isSuccess ? _percentages.result : [0, 0, 0, 0, 0];
-
   const discountGachaTen = isSuccess ? _discountGachaTen.result.toString() : "";
 
   return (
@@ -89,7 +88,7 @@ export function PoolInfoCard({ setIsBlurred, setIsTen }) {
           <dialog id="gacha_hint_modal" className="modal">
             <div className="modal-box">
               <h3 className="font-bold text-lg">Hello!</h3>
-              <p className="py-4">请在按照右侧继续操作</p>
+              <p className="py-4">请在右侧继续操作</p>
             </div>
             <form method="dialog" className="modal-backdrop">
               <button onClick={() => setIsBlurred(false)}>close</button>
@@ -116,7 +115,7 @@ export function PoolInfoCard({ setIsBlurred, setIsTen }) {
   );
 }
 
-function GachaWorkflow({ isBlurred, isTen }) {
+function GachaWorkflow({ isBlurred, isTen, reqId }) {
   // 抽卡流程
   const [currStep, setCurrStep] = useState(0);
 
@@ -124,7 +123,7 @@ function GachaWorkflow({ isBlurred, isTen }) {
     <div className={`card grow bg-base-100 shadow-sm ${isBlurred && "blur-sm pointer-events-none select-none"}`}>
       <div className="card-body flex-row">
         {/* 进度条 */}
-        <ul className="steps steps-vertical h-full w-1/3 font-bold">
+        <ul className="steps steps-vertical h-full min-w-1/4 font-bold">
           <li className={`step ${currStep > 0 && "step-primary"}`}>
             <span>Gacha</span>
           </li>
@@ -140,7 +139,7 @@ function GachaWorkflow({ isBlurred, isTen }) {
         </ul>
         {/* 右侧内容 */}
         <ul className="grid grid-rows-4 place-items-center">
-          <GachaStepOne isTen={isTen} />
+          <GachaStepOne isTen={isTen} setCurrStep={setCurrStep} reqId={reqId} />
           <li>等待后端返回签名</li>
           <li>等待随机数 fulfill（读取 event RandomFulfilled）</li>
           <li>显示抽卡结果</li>
@@ -153,13 +152,33 @@ function GachaWorkflow({ isBlurred, isTen }) {
 export function GachaTab() {
   const [isBlurred, setIsBlurred] = useState<boolean>(true);
   const [isTen, setIsTen] = useState<boolean>(false);
+  const [reqId, setReqId] = useState<bigint>(0n);
+  const connection = useConnection();
+
+  // 监听 GachaOne 事件，这个不能放里面，否则会被渲染覆盖导致多次开始
+  useWatchContractEvent({
+    address: CA,
+    abi: ABI,
+    eventName: "GachaOne",
+    onLogs(logs) {
+      console.log("New logs!");
+      const reqId = logs[0]?.args.requestId;
+      const who = logs[0]?.args.who;
+      console.log("address", who);
+      console.log("reqId", reqId);
+      if (connection.address == who) {
+        setReqId(reqId!);
+      }
+    },
+    pollingInterval: 1_000,
+  });
 
   return (
     <div className="container flex">
       {/* 卡池展示 */}
       <PoolInfoCard setIsBlurred={setIsBlurred} setIsTen={setIsTen} />
       {/* 抽卡流程 */}
-      <GachaWorkflow isBlurred={isBlurred} isTen={isTen} key={Number(isTen)} />
+      <GachaWorkflow isBlurred={isBlurred} isTen={isTen} reqId={reqId} key={Number(isTen)} />
     </div>
   );
 }

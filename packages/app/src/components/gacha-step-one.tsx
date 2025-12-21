@@ -1,24 +1,25 @@
+import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { parseUnits } from "viem";
 import { getPoolInfo } from "./read-gacha";
-import { BaseError, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { ABI, CA } from "@/public/GachaPoolContract";
-import { useState } from "react";
 
-export function GachaStepOne({ isTen }) {
-  const { data, isSuccess: poolInfoSuccess } = getPoolInfo();
-  const [_, costGwei, __, discount] = data || [];
-
+export function GachaStepOne({ isTen, setCurrStep, reqId }) {
+  // 计算 value
   let txValue = 0n;
-  if (poolInfoSuccess) {
-    txValue = isTen
-      ? parseUnits(((10n * costGwei.result * BigInt(discount.result)) / 100n).toString(), 9)
-      : parseUnits(BigInt(costGwei.result).toString(), 9);
-  }
+
+  console.log("render GachaStepOne");
 
   const gacha = useWriteContract();
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    // 计算费用
+    const { costGwei, discountGachaTen } = (await getPoolInfo()) || [];
+    setCurrStep(1);
+    txValue = isTen
+      ? parseUnits(((10n * costGwei * BigInt(discountGachaTen)) / 100n).toString(), 9)
+      : parseUnits(BigInt(costGwei).toString(), 9);
+    // 提交抽卡交易
     gacha.mutateAsync({
       address: CA,
       abi: ABI,
@@ -28,6 +29,7 @@ export function GachaStepOne({ isTen }) {
   }
 
   const { isSuccess } = useWaitForTransactionReceipt({ hash: gacha.data });
+  if (isSuccess) setCurrStep(2);
 
   return (
     <form onSubmit={submit}>
@@ -41,9 +43,9 @@ export function GachaStepOne({ isTen }) {
             单抽
           </button>
         )}
-        抽卡+等待交易结果（读取 event gachaOne）
-        {gacha.data && <div>Transaction Hash: {gacha.data}</div>}
-        {isSuccess && <div>Transaction confirmed.</div>}
+        抽卡+等待交易结果
+        {gacha.data && <p className="wrap-anywhere text-[12px]">Transaction Hash: {gacha.data}</p>}
+        {isSuccess && <div>Transaction confirmed. ReqId: {reqId} </div>}
       </li>
     </form>
   );
