@@ -6,9 +6,6 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@types/bun": "latest",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
     "dotenv": "^17.2.3",
     "prettier": "^3.7.4"
   },

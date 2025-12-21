@@ -4,9 +4,6 @@
     "": {
       "name": "gacha-dapp-monorepo",
       "devDependencies": {
-        "@types/bun": "latest",
-        "@types/react": "^19",
-        "@types/react-dom": "^19",
         "dotenv": "^17.2.3",
         "prettier": "^3.7.4",
       },
@@ -27,6 +24,11 @@
         "tailwindcss": "^4.1.11",
         "viem": "2.x",
         "wagmi": "^3.1.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
       },
     },
     "packages/contract": {
@@ -265,7 +267,7 @@
 
     "@typechain/ethers-v6": ["@typechain/ethers-v6@0.5.1", "", { "dependencies": { "lodash": "^4.17.15", "ts-essentials": "^7.0.1" }, "peerDependencies": { "ethers": "6.x", "typechain": "^8.3.2", "typescript": ">=4.7.0" } }, "sha512-F+GklO8jBWlsaVV+9oHaPh5NJdd6rAKN4tklGfInX1Q7h0xPgVLP39Jl3eCulPB5qexI71ZFHwbljx4ZXNfouA=="],
 
-    "@types/bun": ["@types/bun@1.3.4", "", { "dependencies": { "bun-types": "1.3.4" } }, "sha512-EEPTKXHP+zKGPkhRLv+HI0UEX8/o+65hqARxLy8Ov5rIxMBPNTjeZww00CIihrIQGEQBYg+0roO5qOnS/7boGA=="],
+    "@types/bun": ["@types/bun@1.3.5", "", { "dependencies": { "bun-types": "1.3.5" } }, "sha512-RnygCqNrd3srIPEWBd5LFeUYG7plCoH2Yw9WaZGyNmdTEei+gWaHqydbaIRkIkcbXwhBT94q78QljxN0Sk838w=="],
 
     "@types/chai": ["@types/chai@4.3.20", "", {}, "sha512-/pC9HAB5I/xMlc5FP77qjCnI16ChlJfW0tGa0IUcFn38VJrTV6DeZ60NU5KZBtaOZqjdpwTWohz5HU1RrhiYxQ=="],
 
@@ -327,7 +329,7 @@
 
     "bun-plugin-tailwind": ["bun-plugin-tailwind@0.1.2", "", { "peerDependencies": { "bun": ">=1.0.0" } }, "sha512-41jNC1tZRSK3s1o7pTNrLuQG8kL/0vR/JgiTmZAJ1eHwe0w5j6HFPKeqEk0WAD13jfrUC7+ULuewFBBCoADPpg=="],
 
-    "bun-types": ["bun-types@1.3.4", "", { "dependencies": { "@types/node": "*" } }, "sha512-5ua817+BZPZOlNaRgGBpZJOSAQ9RQ17pkwPD0yR7CfJg+r8DgIILByFifDTa+IPDDxzf5VNhtNlcKqFzDgJvlQ=="],
+    "bun-types": ["bun-types@1.3.5", "", { "dependencies": { "@types/node": "*" } }, "sha512-inmAYe2PFLs0SUbFOWSVD24sg1jFlMPxOjOSSCYqUgn4Hsc3rDc7dFvfVYjFPNHtov6kgUeulV4SxbuIV/stPw=="],
 
     "camelcase": ["camelcase@6.3.0", "", {}, "sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA=="],
 
