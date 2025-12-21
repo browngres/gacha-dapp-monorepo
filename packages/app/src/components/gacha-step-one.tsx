@@ -5,9 +5,6 @@ import { ABI, CA } from "@/public/GachaPoolContract";
 import { useState } from "react";
 
 export function GachaStepOne({ isTen }) {
-  const [hash, setHash] = useState<`0x${string}`>("0x");
-  const [pending, setPending] = useState<boolean>(false);
-
   const { data, isSuccess: poolInfoSuccess } = getPoolInfo();
   const [_, costGwei, __, discount] = data || [];
 
@@ -28,28 +25,24 @@ export function GachaStepOne({ isTen }) {
       functionName: isTen ? "gachaTen" : "gachaOne",
       value: txValue,
     });
-    setHash(gacha.data!);
-    console.log(hash);
-    setPending(gacha.isPending);
   }
 
-  const { isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isSuccess } = useWaitForTransactionReceipt({ hash: gacha.data });
 
   return (
     <form onSubmit={submit}>
       <li>
         {isTen ? (
-          <button className="btn btn-soft btn-success" type="submit" disabled={pending}>
+          <button className="btn btn-soft btn-success" type="submit" disabled={gacha.isPending}>
             十连
           </button>
         ) : (
-          <button className="btn btn-soft btn-warning" type="submit" disabled={pending}>
+          <button className="btn btn-soft btn-warning" type="submit" disabled={gacha.isPending}>
             单抽
           </button>
         )}
         抽卡+等待交易结果（读取 event gachaOne）
-        {hash && <div>Transaction Hash: {hash}</div>}
-        {gacha.error && <div>Error: {(gacha.error as BaseError).shortMessage || gacha.error.message}</div>}
+        {gacha.data && <div>Transaction Hash: {gacha.data}</div>}
         {isSuccess && <div>Transaction confirmed.</div>}
       </li>
     </form>
