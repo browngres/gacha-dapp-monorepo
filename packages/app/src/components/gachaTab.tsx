@@ -3,13 +3,14 @@ import { type BaseError } from "wagmi";
 import { formatUnits } from "viem";
 import { getPoolInfo } from "./read-gacha";
 import { useEffect, useState } from "react";
+import { GachaStepOne } from "./gacha-step-one";
 
 export function PoolInfoCard({ setIsBlurred, setIsTen }) {
   // 卡池展示
   // TODO 将来从 pool manager 读取 pool 信息
-  const { data, error, isPending } = getPoolInfo();
-
+  const { data, error, isPending, isSuccess } = getPoolInfo();
   const [_poolId, _costGwei, _percentages, _discountGachaTen] = data || [];
+  
   if (isPending)
     return (
       <div>
@@ -18,11 +19,11 @@ export function PoolInfoCard({ setIsBlurred, setIsTen }) {
     );
   if (error) return <div>Error: {(error as BaseError).shortMessage || error.message}</div>;
 
-  const poolId = _poolId?.status == "success" ? _poolId.result.toString() : "";
-  const cost = _costGwei?.status == "success" ? formatUnits(_costGwei.result, 9) : "";
-  const percentages = _percentages?.status == "success" ? _percentages.result : [0, 0, 0, 0, 0];
+  const poolId = isSuccess ? _poolId.result.toString() : "";
+  const cost = isSuccess ? formatUnits(_costGwei.result, 9) : "";
+  const percentages = isSuccess ? _percentages.result : [0, 0, 0, 0, 0];
 
-  const discountGachaTen = _discountGachaTen?.status == "success" ? _discountGachaTen.result.toString() : "";
+  const discountGachaTen = isSuccess ? _discountGachaTen.result.toString() : "";
 
   return (
     <div className="card flex-none bg-base-100 w-96 shadow-sm px-1 card-dash">
@@ -139,18 +140,7 @@ function GachaWorkflow({ isBlurred, isTen }) {
         </ul>
         {/* 右侧内容 */}
         <ul className="grid grid-rows-4 place-items-center">
-          <li>
-            {isTen ? (
-              <button className="btn btn-soft btn-warning" onClick={() => {}}>
-                十连
-              </button>
-            ) : (
-              <button className="btn btn-soft btn-warning" onClick={() => {}}>
-                单抽
-              </button>
-            )}
-            抽卡+等待交易结果（读取 event gachaOne）
-          </li>
+          <GachaStepOne isTen={isTen} />
           <li>等待后端返回签名</li>
           <li>等待随机数 fulfill（读取 event RandomFulfilled）</li>
           <li>显示抽卡结果</li>

@@ -3,7 +3,7 @@ import { useReadContracts } from "wagmi";
 import { CA, ABI } from "../public/GachaPoolContract";
 
 export function getPoolInfo() {
-  const { data, error, isPending } = useReadContracts({
+  const { data, error, isPending, isSuccess } = useReadContracts({
     contracts: [
       {
         address: CA,
@@ -27,5 +27,5 @@ export function getPoolInfo() {
       },
     ],
   });
-  return { data, error, isPending };
+  return { data, error, isPending, isSuccess };
 }
