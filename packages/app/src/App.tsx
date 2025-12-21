@@ -37,7 +37,7 @@ export function App() {
         <div className="navbar-end">
           <label className="flex cursor-pointer gap-2 pr-4">
             <span className="label-text">dark</span>
-            <input type="checkbox" value="dark" className="toggle theme-controller" />
+            <input type="checkbox" value="forest" className="toggle theme-controller" />
           </label>
           <ConnectButton />
         </div>

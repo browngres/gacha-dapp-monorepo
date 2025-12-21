@@ -2,7 +2,7 @@
 @plugin "daisyui" {
   themes:
     valentine --default,
-    dark --prefersdark;
+    forest --prefersdark;
 }
 
 @layer base {
