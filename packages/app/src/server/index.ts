@@ -1,4 +1,4 @@
-import { serve } from "bun"
+import { randomUUIDv7, serve } from "bun"
 import index from "../public/index.html"
 
 import { Database } from "bun:sqlite"
@@ -11,7 +11,7 @@ db.run(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     address CHAR(42) NOT NULL,
     poolId INTEGER NOT NULL CHECK(poolId > 0),
-    requestId TEXT NOT NULL,
+    requestId TEXT NOT NULL CHECK(requestId > 0),
     signature CHAR(132) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(poolId, address, requestId)
@@ -30,9 +30,12 @@ const server = serve({
 
     "/api/gacha/": {
       async POST(req) {
+        console.log("得到一次请求");
+        // 对接前端的 gacha-step-two，签名并返回
         const { pool, address, reqId } = await req.json()
         // TODO 消息签名
-        const signature = "0x123"
+        await Bun.sleep(3000); // 模拟用时
+        const signature = "0x123" + randomUUIDv7().slice(24) // mock
         try {
           const result = db
             .query("INSERT INTO requests (poolId, address, requestId, signature) VALUES (?, ?, ?, ?) RETURNING *")

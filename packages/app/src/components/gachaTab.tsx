@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { formatUnits } from "viem";
-import { useConnection, type BaseError } from "wagmi";
+import { type BaseError } from "wagmi";
 import { usePoolInfo } from "./read-gacha";
 import { GachaStepOne } from "./gacha-step-one";
+import { GachaStepTwo } from "./gacha-step-two";
 
-export function PoolInfoCard({ setIsBlurred, setIsTen }) {
+export function PoolInfoCard({ setIsBlurred, setIsTen, setPoolId }) {
   // 卡池展示
   // TODO 将来从 pool manager 读取 pool 信息
   const { data, error, isPending, isSuccess } = usePoolInfo();
@@ -22,6 +23,8 @@ export function PoolInfoCard({ setIsBlurred, setIsTen }) {
   const cost = isSuccess ? formatUnits(_costGwei.result, 9) : "";
   const percentages = isSuccess ? _percentages.result : [0, 0, 0, 0, 0];
   const discountGachaTen = isSuccess ? _discountGachaTen.result.toString() : "";
+
+  setPoolId(_poolId?.result);
 
   return (
     <div className="card flex-none bg-base-100 w-96 shadow-sm px-1 card-dash">
@@ -114,7 +117,7 @@ export function PoolInfoCard({ setIsBlurred, setIsTen }) {
   );
 }
 
-function GachaWorkflow({ isBlurred, isTen }) {
+function GachaWorkflow({ isBlurred, isTen, poolId }) {
   // 抽卡流程
   const [currStep, setCurrStep] = useState(0);
   const [reqId, setReqId] = useState<bigint>(0n);
@@ -140,7 +143,7 @@ function GachaWorkflow({ isBlurred, isTen }) {
         {/* 右侧内容 */}
         <ul className="grid grid-rows-4 place-items-center">
           <GachaStepOne isTen={isTen} currStep={currStep} setCurrStep={setCurrStep} reqId={reqId} setReqId={setReqId} />
-          <li>等待后端返回签名</li>
+          <GachaStepTwo pool={poolId} currStep={currStep} setCurrStep={setCurrStep} reqId={reqId} />
           <li>等待随机数 fulfill（读取 event RandomFulfilled）</li>
           <li>显示抽卡结果</li>
         </ul>
@@ -152,13 +155,14 @@ function GachaWorkflow({ isBlurred, isTen }) {
 export function GachaTab() {
   const [isBlurred, setIsBlurred] = useState<boolean>(true);
   const [isTen, setIsTen] = useState<boolean>(false);
+  const [poolId, setPoolId] = useState(0);
 
   return (
     <div className="container flex">
       {/* 卡池展示 */}
-      <PoolInfoCard setIsBlurred={setIsBlurred} setIsTen={setIsTen} />
+      <PoolInfoCard setIsBlurred={setIsBlurred} setIsTen={setIsTen} setPoolId={setPoolId} />
       {/* 抽卡流程 */}
-      <GachaWorkflow isBlurred={isBlurred} isTen={isTen} key={Number(isTen)} />
+      <GachaWorkflow isBlurred={isBlurred} isTen={isTen} poolId={poolId} key={Number(isTen)} />
     </div>
   );
 }

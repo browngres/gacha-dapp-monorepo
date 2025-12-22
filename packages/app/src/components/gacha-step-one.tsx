@@ -62,14 +62,14 @@ export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId }) 
   }
 
   return (
-    <form onSubmit={submit}>
-      <li>
+    <li>
+      <form onSubmit={submit}>
         {isTen ? (
-          <button className="btn btn-soft btn-success" type="submit" disabled={gacha.isPending}>
+          <button className="btn btn-soft btn-success" type="submit" disabled={gacha.isPending || currStep > 1}>
             十连
           </button>
         ) : (
-          <button className="btn btn-soft btn-warning" type="submit" disabled={gacha.isPending}>
+          <button className="btn btn-soft btn-warning" type="submit" disabled={gacha.isPending || currStep > 1}>
             单抽
           </button>
         )}
@@ -77,7 +77,7 @@ export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId }) 
         {gacha.data && <p className="wrap-anywhere text-[12px]">Transaction Hash: {gacha.data}</p>}
         {isSuccess && <div> Transaction confirmed. </div>}
         {currStep >= 1 && <ReqId />}
-      </li>
-    </form>
+      </form>
+    </li>
   );
 }
