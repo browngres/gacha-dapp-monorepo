@@ -34,7 +34,7 @@ const server = serve({
         // 对接前端的 gacha-step-two，签名并返回
         const { pool, address, reqId } = await req.json()
         // TODO 消息签名
-        await Bun.sleep(3000); // 模拟用时
+        await Bun.sleep(1000); // 模拟用时
         const signature = "0x123" + randomUUIDv7().slice(24) // mock
         try {
           const result = db
