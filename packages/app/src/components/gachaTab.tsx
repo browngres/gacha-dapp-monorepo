@@ -1,9 +1,8 @@
-import { useConnection, useWatchContractEvent, type BaseError } from "wagmi";
-import { formatUnits } from "viem";
 import { useState } from "react";
+import { formatUnits } from "viem";
+import { useConnection, type BaseError } from "wagmi";
 import { usePoolInfo } from "./read-gacha";
 import { GachaStepOne } from "./gacha-step-one";
-import { ABI, CA } from "@/public/GachaPoolContract";
 
 export function PoolInfoCard({ setIsBlurred, setIsTen }) {
   // 卡池展示
@@ -115,9 +114,10 @@ export function PoolInfoCard({ setIsBlurred, setIsTen }) {
   );
 }
 
-function GachaWorkflow({ isBlurred, isTen, reqId }) {
+function GachaWorkflow({ isBlurred, isTen }) {
   // 抽卡流程
   const [currStep, setCurrStep] = useState(0);
+  const [reqId, setReqId] = useState<bigint>(0n);
 
   return (
     <div className={`card grow bg-base-100 shadow-sm ${isBlurred && "blur-sm pointer-events-none select-none"}`}>
@@ -139,7 +139,7 @@ function GachaWorkflow({ isBlurred, isTen, reqId }) {
         </ul>
         {/* 右侧内容 */}
         <ul className="grid grid-rows-4 place-items-center">
-          <GachaStepOne isTen={isTen} setCurrStep={setCurrStep} reqId={reqId} />
+          <GachaStepOne isTen={isTen} currStep={currStep} setCurrStep={setCurrStep} reqId={reqId} setReqId={setReqId} />
           <li>等待后端返回签名</li>
           <li>等待随机数 fulfill（读取 event RandomFulfilled）</li>
           <li>显示抽卡结果</li>
@@ -152,33 +152,13 @@ function GachaWorkflow({ isBlurred, isTen, reqId }) {
 export function GachaTab() {
   const [isBlurred, setIsBlurred] = useState<boolean>(true);
   const [isTen, setIsTen] = useState<boolean>(false);
-  const [reqId, setReqId] = useState<bigint>(0n);
-  const connection = useConnection();
-
-  // 监听 GachaOne 事件，这个不能放里面，否则会被渲染覆盖导致多次开始
-  useWatchContractEvent({
-    address: CA,
-    abi: ABI,
-    eventName: "GachaOne",
-    onLogs(logs) {
-      console.log("New logs!");
-      const reqId = logs[0]?.args.requestId;
-      const who = logs[0]?.args.who;
-      console.log("address", who);
-      console.log("reqId", reqId);
-      if (connection.address == who) {
-        setReqId(reqId!);
-      }
-    },
-    pollingInterval: 1_000,
-  });
 
   return (
     <div className="container flex">
       {/* 卡池展示 */}
       <PoolInfoCard setIsBlurred={setIsBlurred} setIsTen={setIsTen} />
       {/* 抽卡流程 */}
-      <GachaWorkflow isBlurred={isBlurred} isTen={isTen} reqId={reqId} key={Number(isTen)} />
+      <GachaWorkflow isBlurred={isBlurred} isTen={isTen} key={Number(isTen)} />
     </div>
   );
 }

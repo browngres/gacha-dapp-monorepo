@@ -9,6 +9,7 @@
 - bun (Runtime + Package Manager + Bundler)
 - monorepo
 - rainbowkit
+- wagmi 3
 - react + tailwind + daisyui
 - hardhat 3
 - Chainlink VRF
@@ -64,6 +65,10 @@ wagmi 文档中列出来的[钱包连接器](https://wagmi.sh/react/guides/conne
 - [Bun Runtime](https://bun.com/docs)
 - [Bun Workspaces](https://bun.com/docs/pm/workspaces)
 - [Bun Bundler](https://bun.com/docs/bundler)
+- [React](https://zh-hans.react.dev/learn)-
+- [wagmi](https://wagmi.sh/react/getting-started)
+- [daisyUI](https://daisyui.com/components/)
+- [tailwind](https://tailwindcss.com/docs/)
 
 #### 文章
 
