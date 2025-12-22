@@ -4,6 +4,8 @@ import { type BaseError } from "wagmi";
 import { usePoolInfo } from "./read-gacha";
 import { GachaStepOne } from "./gacha-step-one";
 import { GachaStepTwo } from "./gacha-step-two";
+import { GachaStepThree } from "./gacha-step-three";
+import { GachaStepFour } from "./gacha-step-four";
 
 export function PoolInfoCard({ setIsBlurred, setIsTen, setPoolId }) {
   // 卡池展示
@@ -141,11 +143,11 @@ function GachaWorkflow({ isBlurred, isTen, poolId }) {
           </li>
         </ul>
         {/* 右侧内容 */}
-        <ul className="grid grid-rows-4 place-items-center">
+        <ul className="grid grid-rows-4 grow place-items-center">
           <GachaStepOne isTen={isTen} currStep={currStep} setCurrStep={setCurrStep} reqId={reqId} setReqId={setReqId} />
           <GachaStepTwo pool={poolId} currStep={currStep} setCurrStep={setCurrStep} reqId={reqId} />
-          <li>等待随机数 fulfill（读取 event RandomFulfilled）</li>
-          <li>显示抽卡结果</li>
+          <GachaStepThree currStep={currStep} setCurrStep={setCurrStep} reqId={reqId} />
+          <GachaStepFour currStep={currStep} reqId={reqId} />
         </ul>
       </div>
     </div>
