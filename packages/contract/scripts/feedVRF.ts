@@ -57,7 +57,7 @@ async function main() {
       console.info("consumer:", sender)
 
       // 生成随机数
-      const randomWords: bigint[] = Array.from(new Array(numWords), () => {
+      const randomWords: bigint[] = Array.from(new Array(Number(numWords)), () => {
         return BigInt("0x" + randomBytes(32).toString("hex"))
       })
 
