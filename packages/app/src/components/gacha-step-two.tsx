@@ -25,7 +25,7 @@ function Signature({ pool, reqId, setCurrStep }) {
       }
     } catch (error) {
       console.error(error);
-      // alert("Failed to fetch");
+      return Promise.reject(new Error("Fetch Failed"));
     }
     return "";
   }
@@ -52,22 +52,22 @@ function Signature({ pool, reqId, setCurrStep }) {
     isError,
     error,
     isFetching,
-  } = useQuery({ queryKey: ["signature", pool, reqId], queryFn: fetchSignature });
+  } = useQuery({ queryKey: ["signature", pool, reqId], queryFn: fetchSignature, staleTime: 2 * 60 * 1000 });
 
   // 更新为下一步骤
   if (isSuccess) setCurrStep(3);
 
   return (
-    <div>
+    <>
       签名：
       {isFetching ? (
         <span className="loading loading-spinner loading-md  text-secondary"></span>
       ) : isError ? (
         <span>Error: {error.message}</span>
       ) : (
-        <div>{signature}</div>
+        signature
       )}
-    </div>
+    </>
   );
 }
 
