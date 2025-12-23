@@ -3,7 +3,7 @@ import { network } from "hardhat"
 const { ethers } = await network.connect()
 
 async function main() {
-  const gachaPool = await ethers.getContractAt("GachaPool", "0x016286aA4713791e3FBd79e2D412897d81103ea8")
+  const gachaPool = await ethers.getContractAt("GachaPool", "0x402EF2428C40e7009D39E205450f422c519dfF51")
   const vrf = await ethers.getContractAt("VRFCoordinatorV2_5Mock", "0x70e0C7a7b38d1185D468d316dFDd3e37A8AC5f93")
 
   // await gachaPool.pause()
@@ -24,6 +24,7 @@ async function main() {
   // 每次消耗 0.35 左右
   // await vrf.fundSubscription(ids[1], ethers.parseEther("100"))
 
+  /*
   const gachaOneTime = async (): Promise<bigint> => {
     // 发起一次请求，返回 reqId
     return new Promise<bigint>((resolve, reject) => {
@@ -43,8 +44,10 @@ async function main() {
 
   const reqId = await gachaOneTime()
   console.log(reqId)
+  */
 
   // 给出指定的随机数
+
   // await vrf.fulfillRandomWordsWithOverride(reqId, gachaPool.target, [99999n])
   // const tx = await vrf.fulfillRandomWordsWithOverride(180n, gachaPool.target, [1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 9n, 100n]  )
   // console.log(tx);
@@ -53,7 +56,27 @@ async function main() {
   // console.log(txReceipt);
 
   // console.log(await gachaPool.getResult(reqId));
-  console.log(await gachaPool.getResult(183n))
+  // console.log(await gachaPool.getResult(183n))
+
+  // 向合约转账
+
+  const GANACHE_RPC_TEST_KEY_0 = process.env.GANACHE_RPC_TEST_KEY_0
+  const wallet0 = new ethers.Wallet(GANACHE_RPC_TEST_KEY_0!, ethers.provider)
+  console.log(wallet0.address);
+
+  const tx1 = await wallet0.sendTransaction({
+    to: gachaPool.target,
+    value: parseEther("1.0")
+  });
+  await tx1.wait();
+
+  // GachaPool 部署 NFT
+  // const tx2 = await gachaPool.deployGachaCardNFT("GachaCard","GC", "http://127.0.0.1/nft/","http://127.0.0.1/nft/contract-metadata.json")
+  // await tx2.wait();
+
+  // 检查合约的余额
+  console.log("GachaPool 余额", await ethers.provider.getBalance(gachaPool.target));
+
 }
 
 main().catch((error) => {

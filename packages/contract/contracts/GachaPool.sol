@@ -24,7 +24,7 @@ import {GachaCardNFT} from "./GachaCardNFT.sol";
 import {CREATE3} from "solady/src/utils/CREATE3.sol";
 
 /// @dev Only in Hardhat simulated network
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /*
 备忘： whenNotPaused, whenPaused, nonReentrant
@@ -89,7 +89,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @dev 大部分状态变量定义成 config，使用 ERC7201 存储布局
     uint32 constant PROCESSING_CAP = 100; // 未结算的请求数量限制
     address public claimSigner; // claim 签名者
-    GachaCardNFT GACHA_CARD_NFT;
+    GachaCardNFT public GACHA_CARD_NFT;
 
     // ** GachaPool 记录相关
     /// @dev 映射存储使用 ERC7201 存储布局
@@ -129,6 +129,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     event GuaranteeChanged(bool guarantee);
     event GuaranteeRarityChanged(Rarity level);
     event Withdraw(address indexed withdrawer, uint value, uint timestamp); // 提款者，数量，时间
+    event DeployedNFT(address);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -302,6 +303,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
             abi.encodePacked(type(GachaCardNFT).creationCode, abi.encode(name, symbol, address(this))),
             salt
         );
+        emit DeployedNFT(deployed);
         GACHA_CARD_NFT = GachaCardNFT(deployed);
         GACHA_CARD_NFT.setBaseURI(baseURI);
         GACHA_CARD_NFT.setContractURI(contractURI);
