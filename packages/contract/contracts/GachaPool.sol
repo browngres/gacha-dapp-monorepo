@@ -16,6 +16,9 @@ import {IVRFCoordinatorV2Plus} from "./mock/VRF_Mock_flattened.sol";
 // 枚举类型
 import {EnumerableSetLib} from "solady/src/utils/EnumerableSetLib.sol";
 
+// 签名检查
+import {ECDSA} from "solady/src/utils/ECDSA.sol";
+
 /// @dev Only in Hardhat simulated network
 import "hardhat/console.sol";
 
@@ -62,6 +65,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     using EnumerableSetLib for EnumerableSetLib.Uint256Set;
     using EnumerableSetLib for EnumerableSetLib.AddressSet;
+    using ECDSA for bytes32;
 
     // * 【 状态变量 】
     // ** 访问控制相关
@@ -106,6 +110,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     error InsufficientFunds();
     error CannotPause();
     error WithdrawFailed(uint balance);
+    error ReqIdInvalid(bool claimed);
 
     // * 【 自定义事件 】
     event GachaOne(address indexed who, uint256 requestId);
@@ -161,7 +166,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     // * 【 public 函数】
 
     /// @notice 单抽
-    function gachaOne() public payable whenNotPaused returns (bytes32) {
+    function gachaOne() public payable whenNotPaused {
         PoolStorage storage $ = _getPoolStorage();
         if (msg.value < $.cfg.costGwei * 1 gwei) {
             revert InsufficientFunds();
@@ -174,14 +179,11 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         /// @dev 集合添加会自动去重
         allPlayers.add(msg.sender);
         emit GachaOne(msg.sender, requestId);
-        // TODO 兑换码构造
-        bytes32 code = keccak256("gacha");
-        return code;
     }
 
     /// @notice 十连抽，费用打折
     /// @dev discountGachaTen 90 代表代表9折， 10% off
-    function gachaTen() public payable whenNotPaused returns (bytes32) {
+    function gachaTen() public payable whenNotPaused {
         PoolStorage storage $ = _getPoolStorage();
         if (msg.value < ($.cfg.costGwei * 1 gwei * $.cfg.discountGachaTen) / 10) {
             revert InsufficientFunds();
@@ -192,13 +194,28 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         processingRequests.add(requestId, PROCESSING_CAP);
         allPlayers.add(msg.sender);
         emit GachaTen(msg.sender, requestId);
-        // TODO 兑换码构造
-        bytes32 code = keccak256("gacha");
-        return code;
     }
 
-    /// 兑奖
-    // function claim() returns () {}
+    /// @notice 兑奖
+    function claim(uint256 reqId, bytes calldata signature) public returns (uint8 count) {
+        if (signature.length == 0) revert ECDSA.InvalidSignature();
+
+        // reqId 必须在 fulfilled 集合中（随机数已经满足但未领取）
+        if (claimedRequests.contains(reqId)) revert ReqIdInvalid(true);
+        if (!(fulfilledRequests.contains(reqId))) revert ReqIdInvalid(false);
+
+        PoolStorage storage $ = _getPoolStorage();
+        // TODO 验证签名
+        bytes32 msgHash = keccak256(abi.encodePacked(reqId, $.cfg.poolId, msg.sender, address(this)));
+        if (msgHash.toEthSignedMessageHash().recoverCalldata(signature) != claimSigner) revert ECDSA.InvalidSignature();
+
+        /// @dev 更新请求的状态为：已领取
+        fulfilledRequests.remove(reqId);
+        claimedRequests.add(reqId);
+
+        // TODO mint
+        return 1;
+    }
 
     // * 【 admin 函数】
 

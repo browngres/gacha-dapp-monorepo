@@ -26,8 +26,8 @@
 
 1. 创建卡池，编号，总量，概率，单次费用。 pool
 2. 抽卡界面：用户调用抽卡方法，发起交易，合约发出随机数请求。
-3. 前端从交易结果中得到 requestId，向后端提供地址 + requestId + poolId
-4. 后端签名(地址 + requestId + poolId)，并返回前端。
+3. 前端从交易结果中得到 requestId，向后端提供（地址 + requestId + poolId）
+4. 后端签名(地址 + requestId + poolId + 合约地址)，并返回前端。
 5. 合约处（独立于前端、后端）监控链上 VRF Mock 事件，向 VRF Mock 写入随机数。VRF Mock 给到卡池
 6. 兑奖界面：用户连接钱包，向合约发出请求，提供签名、requestId。
 7. 合约验证签名后，mint nft
@@ -184,7 +184,8 @@ NFT contractURI
   - [x] role, pauseable
   - [x] 信标代理
   - [ ] ReentranceGuard
-- [ ] 编写测试
+- [x] 编写测试
+  - [ ] 检查 coverage
 - [ ] 给合约代码添加 NatSpec 注释
 - [ ] 按照风格指南整理合约代码
 - [ ] 检查修饰符(role, pause, reentrance)
@@ -219,5 +220,5 @@ ERC721
 
 NFT 合约参考 0GLunarian NFT 合约
 
-前端参考
+项目参考
 [ERC20-Airdop-with-Merkle-Trees-Wagmi-V2-RainbowKit-V2](https://github.com/BenBktech/ERC20-Airdop-with-Merkle-Trees-Wagmi-V2-RainbowKit-V2)
