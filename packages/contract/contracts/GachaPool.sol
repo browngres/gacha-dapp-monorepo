@@ -19,6 +19,10 @@ import {EnumerableSetLib} from "solady/src/utils/EnumerableSetLib.sol";
 // 签名检查
 import {ECDSA} from "solady/src/utils/ECDSA.sol";
 
+// CREATE
+import {GachaCardNFT} from "./GachaCardNFT.sol";
+import {CREATE3} from "solady/src/utils/CREATE3.sol";
+
 /// @dev Only in Hardhat simulated network
 import "hardhat/console.sol";
 
@@ -85,6 +89,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @dev 大部分状态变量定义成 config，使用 ERC7201 存储布局
     uint32 constant PROCESSING_CAP = 100; // 未结算的请求数量限制
     address public claimSigner; // claim 签名者
+    GachaCardNFT GACHA_CARD_NFT;
 
     // ** GachaPool 记录相关
     /// @dev 映射存储使用 ERC7201 存储布局
@@ -283,6 +288,23 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
             revert WithdrawFailed(balance);
         }
         emit Withdraw(msg.sender, balance, block.timestamp);
+    }
+
+    /// @notice 创建卡池对应的 NFT 合约
+    function deployGachaCardNFT(
+        string memory name,
+        string memory symbol,
+        string calldata baseURI,
+        string calldata contractURI
+    ) public onlyRole(ADMIN_ROLE) returns (address deployed) {
+        bytes32 salt = keccak256(bytes("GachaPoolSalt"));
+        deployed = CREATE3.deployDeterministic(
+            abi.encodePacked(type(GachaCardNFT).creationCode, abi.encode(name, symbol, address(this))),
+            salt
+        );
+        GACHA_CARD_NFT = GachaCardNFT(deployed);
+        GACHA_CARD_NFT.setBaseURI(baseURI);
+        GACHA_CARD_NFT.setContractURI(contractURI);
     }
 
     // * 【 view 函数】

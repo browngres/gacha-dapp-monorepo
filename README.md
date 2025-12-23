@@ -14,6 +14,7 @@
 - hardhat 3
 - Chainlink VRF
 - ERC721 NFT
+- 由合约创建合约，(solady create3)
 - 部分代码使用 solady 替代 OZ
 
 ### 重点学习（技术难点）
@@ -26,7 +27,6 @@
 - 在开发测试中 Mock 合约
 - 不可升级合约的 initializer 改造
 - 可枚举的集合(EnumerableSet)
-- create2 ，由合约创建合约
 - access control roles
 - transient storage (ReentrancyGuardTransient) （仅兼容 Cancun 升级之后的 EVM）
 - ERC-7201 Namespaced 存储槽
@@ -69,6 +69,7 @@ wagmi 文档中列出来的[钱包连接器](https://wagmi.sh/react/guides/conne
 - [wagmi](https://wagmi.sh/react/getting-started)
 - [daisyUI](https://daisyui.com/components/)
 - [tailwind](https://tailwindcss.com/docs/)
+- [TanStack Query](https://tanstack.com/query/)
 
 #### 文章
 
@@ -84,3 +85,8 @@ wagmi 文档中列出来的[钱包连接器](https://wagmi.sh/react/guides/conne
 
 - [如何创建和使用ERC-721代币？](https://learnblockchain.cn/article/2077)
 - [Metadata Standards](https://docs.opensea.io/docs/metadata-standards)
+
+- [WTF Solidity极简入门: 6. 引用类型, array, struct](https://github.com/AmazingAng/WTF-Solidity/blob/main/06_ArrayAndStruct/readme.md)
+- [WTF Solidity极简入门: 25. CREATE2](https://github.com/AmazingAng/WTF-Solidity/blob/main/25_Create2/readme.md)
+
+- [When to use Storage vs. Memory vs. Calldata in Solidity](https://www.alchemy.com/docs/when-to-use-storage-vs-memory-vs-calldata-in-solidity)

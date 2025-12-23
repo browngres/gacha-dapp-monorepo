@@ -1,5 +1,8 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules"
 
+// !! Only for test
+// !! This is not used in the production environment.
+
 const GachaCardModule = buildModule("GachaCardModule", (m) => {
   const deployer = m.getAccount(0)
   const GachaCard = m.contract("GachaCardNFT", ["Gacha Card", "GC", deployer])
