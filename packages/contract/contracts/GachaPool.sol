@@ -44,19 +44,19 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     /// @dev 随机数的请求是否被 fulfilled， 使用集合来查找，这里不存
     struct RandomResult {
+        Rarity[] rarity;
         uint8 numWords;
         uint256[] words;
-        Rarity[] rarity;
     }
 
     struct PoolConfig {
+        uint64 costGwei; // 抽卡费用，单位 Gwei
         uint32 poolId; // 卡池 id
         uint32 supply; // 总量，最大抽卡次数
-        uint64 costGwei; // 抽卡费用，单位 Gwei
         uint8 discountGachaTen; // 十连费用折扣，0-100
         bool guarantee; // 是否十连保底机制
-        Rarity guaranteeRarity; // 保底稀有度
         uint8[5] percentages; // 稀有度概率，使用定长数组节省 Gas
+        Rarity guaranteeRarity; // 保底稀有度
     }
 
     struct PoolStorage {
@@ -309,12 +309,13 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     }
 
     // * 【 view 函数】
-    /// @notice 返回使用的 VRF 合约地址
+    /// @notice 查询使用的 VRF 合约地址
     /// @dev 真实的 VRF 合约是看不到往链上写的随机数的，Mock 版本则可以看到。
     function getAddressVRF() public view returns (address) {
         return address(COORDINATOR);
     }
 
+    /// @notice 查询 Config
     function getPoolConfig() public view returns (uint32, uint32, uint64, uint8, bool, Rarity, uint8[5] memory) {
         PoolConfig storage cfg = _getPoolStorage().cfg;
         return (
