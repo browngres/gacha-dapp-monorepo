@@ -133,6 +133,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     event GuaranteeRarityChanged(Rarity level);
     event Withdraw(address indexed withdrawer, uint value, uint timestamp); // 提款者，数量，时间
     event DeployedNFT(address);
+    event NftUriChanged();
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     /// @dev 防止攻击者绕过代理直接调用实现合约的初始化
@@ -309,18 +310,23 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @notice 创建卡池对应的 NFT 合约
     function deployGachaCardNFT(
         string memory name,
-        string memory symbol,
-        string calldata baseURI,
-        string calldata contractURI
+        string memory symbol
     ) public onlyRole(ADMIN_ROLE) returns (address deployed) {
+        // 使用 solady 的 create3
         deployed = CREATE3.deployDeterministic(
             abi.encodePacked(type(GachaCardNFT).creationCode, abi.encode(name, symbol, address(this))),
             keccak256(bytes("GachaPoolSalt"))
         );
         emit DeployedNFT(deployed);
         GACHA_CARD_NFT = GachaCardNFT(deployed);
+    }
+
+    /// @notice 更新 NFT URI
+    function setNftUri(string memory baseURI, string memory contractURI) public onlyRole(ADMIN_ROLE) {
+        if (address(GACHA_CARD_NFT) == address(0)) revert NoDeploymentNFT();
         GACHA_CARD_NFT.setBaseURI(baseURI);
         GACHA_CARD_NFT.setContractURI(contractURI);
+        emit NftUriChanged();
     }
 
     // * 【 view 函数】
