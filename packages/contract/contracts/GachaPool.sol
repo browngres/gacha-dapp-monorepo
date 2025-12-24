@@ -298,10 +298,9 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         string calldata baseURI,
         string calldata contractURI
     ) public onlyRole(ADMIN_ROLE) returns (address deployed) {
-        bytes32 salt = keccak256(bytes("GachaPoolSalt"));
         deployed = CREATE3.deployDeterministic(
             abi.encodePacked(type(GachaCardNFT).creationCode, abi.encode(name, symbol, address(this))),
-            salt
+            keccak256(bytes("GachaPoolSalt"))
         );
         emit DeployedNFT(deployed);
         GACHA_CARD_NFT = GachaCardNFT(deployed);
@@ -316,32 +315,17 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         return address(COORDINATOR);
     }
 
-    function poolId() public view returns (uint32) {
-        return _getPoolStorage().cfg.poolId;
-    }
-
-    function supply() public view returns (uint32) {
-        return _getPoolStorage().cfg.supply;
-    }
-
-    function costGwei() public view returns (uint64) {
-        return _getPoolStorage().cfg.costGwei;
-    }
-
-    function discountGachaTen() public view returns (uint8) {
-        return _getPoolStorage().cfg.discountGachaTen;
-    }
-
-    function guarantee() public view returns (bool) {
-        return _getPoolStorage().cfg.guarantee;
-    }
-
-    function guaranteeRarity() public view returns (Rarity) {
-        return _getPoolStorage().cfg.guaranteeRarity;
-    }
-
-    function percentages() public view returns (uint8[5] memory) {
-        return _getPoolStorage().cfg.percentages;
+    function getPoolConfig() public view returns (uint32, uint32, uint64, uint8, bool, Rarity, uint8[5] memory) {
+        PoolConfig storage cfg = _getPoolStorage().cfg;
+        return (
+            cfg.poolId,
+            cfg.supply,
+            cfg.costGwei,
+            cfg.discountGachaTen,
+            cfg.guarantee,
+            cfg.guaranteeRarity,
+            cfg.percentages
+        );
     }
 
     /// @notice 根据 reqId 查询抽卡的地址
@@ -432,11 +416,8 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         if (sumPercentage != 100) {
             revert InvalidRarityPercentage();
         }
-        for (uint i; i < 5; i++) {
-            /// @dev 如果是变长数组，这里必须用 push，否则报 index 越界
-            $.cfg.percentages[i] = _percentages[i];
-        }
-
+        /// @dev 如果是变长数组，这里必须用 push，否则报 index 越界
+        $.cfg.percentages = _percentages;
         emit PercentageChanged();
     }
 
