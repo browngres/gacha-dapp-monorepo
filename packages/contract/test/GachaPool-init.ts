@@ -18,14 +18,14 @@ describe("GachaPool init Unit Tests", function () {
 
     // 检查初始化参数
     expect(await beacon.implementation()).equal(impl.target, "beacon's implement address is wrong.")
-    expect(await gacha.poolId()).equal(1)
-    expect(await gacha.supply()).equal(100)
-    expect(await gacha.costGwei()).equal(ethers.parseUnits("0.1", "gwei"))
-    expect(await gacha.discountGachaTen()).equal(90)
-    expect(await gacha.guarantee()).equal(true)
-    expect(await gacha.guaranteeRarity()).equal(1)
+    expect((await gacha.getPoolConfig())[0]).equal(ethers.parseUnits("0.1", "gwei")) // costGwei
+    expect((await gacha.getPoolConfig())[1]).equal(1) // poolId
+    expect((await gacha.getPoolConfig())[2]).equal(100) // supply
+    expect((await gacha.getPoolConfig())[3]).equal(90) // discountGachaTen
+    expect((await gacha.getPoolConfig())[4]).equal(true) // guarantee
+    expect((await gacha.getPoolConfig())[5]).equal(1) // guaranteeRarity
 
-    const percentages = await gacha.percentages()
+    const percentages = (await gacha.getPoolConfig())[6]
     expect(percentages[0]).equal(2)
     expect(percentages[1]).equal(8)
     expect(percentages[2]).equal(10)

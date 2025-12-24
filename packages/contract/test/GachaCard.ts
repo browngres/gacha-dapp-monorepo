@@ -4,6 +4,7 @@ import GachaCardModule from "../ignition/modules/GachaCardNFT.js"
 import type { GachaCardNFT } from "../types/ethers-contracts/contracts/GachaCardNFT.sol/index.js"
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/types"
 
+// 生产环境是使用 GachaPool 合约来部署 GachaCardNFT
 describe("GachaCard Unit Tests", function () {
   let nft: GachaCardNFT
   let user1: HardhatEthersSigner, user2: HardhatEthersSigner
@@ -14,7 +15,7 @@ describe("GachaCard Unit Tests", function () {
     user1 = signers[1]
     user2 = signers[2]
     const { GachaCard } = await ignition.deploy(GachaCardModule)
-    nft = GachaCard
+    nft = await ethers.getContractAt("GachaCardNFT", GachaCard.target)
   })
 
   it("Should successfully initialized with given config", async function () {

@@ -9,7 +9,7 @@ describe("GachaPool Percentage Unit Tests", function () {
     const { ethers, ignition } = await network.connect()
     const { proxy: _gacha } = await ignition.deploy(gachaPoolModule)
     const gachaPool = await ethers.getContractAt("GachaPool", _gacha.target)
-    const percentages = await gachaPool.percentages()
+    const percentages = (await gachaPool.getPoolConfig())[6]
     expect(percentages[0]).equal(2)
     expect(percentages[1]).equal(8)
     expect(percentages[2]).equal(10)
@@ -98,7 +98,7 @@ describe("GachaPool Percentage Unit Tests", function () {
       const { proxy: _gacha } = await ignition.deploy(gachaPoolModule)
       const gachaPool = await ethers.getContractAt("GachaPool", _gacha.target)
 
-      const percentages = await gachaPool.percentages()
+      const percentages = (await gachaPool.getPoolConfig())[6]
       expect(percentages[0]).equal(2)
       expect(percentages[1]).equal(8)
       expect(percentages[2]).equal(10)
@@ -107,7 +107,7 @@ describe("GachaPool Percentage Unit Tests", function () {
 
       await gachaPool.pause()
       await gachaPool.setPercentage([5, 15, 20, 25, 35])
-      const newPercentages = await gachaPool.percentages()
+      const newPercentages = (await gachaPool.getPoolConfig())[6]
       expect(newPercentages[0]).equal(5)
       expect(newPercentages[1]).equal(15)
       expect(newPercentages[2]).equal(20)

@@ -43,7 +43,7 @@ describe("GachaPool Admin Set Unit Tests", function () {
     it("Should successfully setCostGwei", async function () {
       const tx = gachaPool.setCostGwei(100)
       await expect(tx).to.emit(gachaPool, "CostGweiChanged")
-      expect(await gachaPool.costGwei()).to.equal(100)
+      expect((await gachaPool.getPoolConfig())[0]).to.equal(100)
     })
 
     it("Should successfully setDiscountGachaTen", async function () {
@@ -51,20 +51,20 @@ describe("GachaPool Admin Set Unit Tests", function () {
       await expect(gachaPool.setDiscountGachaTen(200)).to.be.revertedWithCustomError(gachaPool, "InvalidDiscount")
 
       await expect(gachaPool.setDiscountGachaTen(66)).to.emit(gachaPool, "DiscountGachaTenChanged")
-      expect(await gachaPool.discountGachaTen()).to.equal(66)
+      expect((await gachaPool.getPoolConfig())[3]).to.equal(66)
     })
 
     it("Should successfully setGuarantee", async function () {
       await expect(gachaPool.setGuarantee(true)).to.emit(gachaPool, "GuaranteeChanged")
-      expect(await gachaPool.guarantee()).to.equal(true)
+      expect((await gachaPool.getPoolConfig())[4]).to.equal(true)
 
       await expect(gachaPool.setGuarantee(false)).to.emit(gachaPool, "GuaranteeChanged")
-      expect(await gachaPool.guarantee()).to.equal(false)
+      expect((await gachaPool.getPoolConfig())[4]).to.equal(false)
     })
 
     it("Should successfully setGuaranteeRarity", async function () {
       await expect(gachaPool.setGuaranteeRarity(2)).to.emit(gachaPool, "GuaranteeRarityChanged")
-      expect(await gachaPool.guaranteeRarity()).to.equal(2)
+      expect((await gachaPool.getPoolConfig())[5]).to.equal(2)
     })
   })
 })
@@ -107,7 +107,7 @@ describe("GachaPool Admin Pause Unit Tests", function () {
 })
 
 describe("GachaPool Admin Withdraw Unit Tests", function () {
-  it("Should successfully  withdraw", async function () {
+  it("Should successfully withdraw", async function () {
     const { ethers, ignition } = await network.connect()
     const signers = await ethers.getSigners()
     const deployer = signers[0]
