@@ -61,6 +61,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     struct PoolStorage {
         PoolConfig cfg;
+        // TODO uint currentSupply; // 当前抽卡次数
         mapping(uint256 reqId => address roller) reqToAddress; // 抽卡的地址
         mapping(address roller => uint256[] requestIds) addressToReq; // 地址的抽卡记录
         mapping(uint256 reqId => RandomResult) requests; // 所有结果记录
@@ -158,9 +159,9 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         COORDINATOR = IVRFCoordinatorV2Plus(_vrfCoordinator);
         // * GachaPool
         PoolStorage storage $ = _getPoolStorage();
+        $.cfg.costGwei = _initConfig.costGwei;
         $.cfg.poolId = _initConfig.poolId;
         $.cfg.supply = _initConfig.supply;
-        $.cfg.costGwei = _initConfig.costGwei;
         $.cfg.discountGachaTen = _initConfig.discountGachaTen;
         $.cfg.guarantee = _initConfig.guarantee;
         $.cfg.guaranteeRarity = _initConfig.guaranteeRarity;
@@ -173,6 +174,8 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     /// @notice 单抽
     function gachaOne() public payable whenNotPaused {
+        // TODO 检查当前抽卡次数是否超过供应
+        // TODO 检查是否有 NFT 合约
         PoolStorage storage $ = _getPoolStorage();
         if (msg.value < $.cfg.costGwei * 1 gwei) {
             revert InsufficientFunds();
@@ -316,12 +319,13 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     }
 
     /// @notice 查询 Config
-    function getPoolConfig() public view returns (uint32, uint32, uint64, uint8, bool, Rarity, uint8[5] memory) {
+    /// @dev 注意顺序
+    function getPoolConfig() public view returns (uint64, uint32, uint32, uint8, bool, Rarity, uint8[5] memory) {
         PoolConfig storage cfg = _getPoolStorage().cfg;
         return (
+            cfg.costGwei,
             cfg.poolId,
             cfg.supply,
-            cfg.costGwei,
             cfg.discountGachaTen,
             cfg.guarantee,
             cfg.guaranteeRarity,
