@@ -61,7 +61,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     struct PoolStorage {
         PoolConfig cfg;
-        // TODO uint currentSupply; // 当前抽卡次数
+        uint32 remaining; // 剩余抽卡次数
         mapping(uint256 reqId => address roller) reqToAddress; // 抽卡的地址
         mapping(address roller => uint256[] requestIds) addressToReq; // 地址的抽卡记录
         mapping(uint256 reqId => RandomResult) requests; // 所有结果记录
@@ -117,6 +117,8 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     error CannotPause();
     error WithdrawFailed(uint balance);
     error ReqIdInvalid(bool claimed);
+    error OutOfStock();
+    error NoDeploymentNFT();
 
     // * 【 自定义事件 】
     event GachaOne(address indexed who, uint256 requestId);
@@ -133,8 +135,8 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     event DeployedNFT(address);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
+    /// @dev 防止攻击者绕过代理直接调用实现合约的初始化
     constructor() {
-        /// @dev 防止攻击者绕过代理直接调用实现合约的初始化
         _disableInitializers();
     }
 
@@ -165,6 +167,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         $.cfg.discountGachaTen = _initConfig.discountGachaTen;
         $.cfg.guarantee = _initConfig.guarantee;
         $.cfg.guaranteeRarity = _initConfig.guaranteeRarity;
+        $.remaining = _initConfig.supply;
         claimSigner = _signer;
         // 分配概率
         _setPercentage(_initConfig.percentages);
@@ -174,18 +177,21 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     /// @notice 单抽
     function gachaOne() public payable whenNotPaused {
-        // TODO 检查当前抽卡次数是否超过供应
-        // TODO 检查是否有 NFT 合约
         PoolStorage storage $ = _getPoolStorage();
-        if (msg.value < $.cfg.costGwei * 1 gwei) {
-            revert InsufficientFunds();
-        }
+        // 检查是否抽完
+        if ($.remaining < 1) revert OutOfStock();
+        // 检查是否部署了 NFT 合约
+        if (address(GACHA_CARD_NFT) == address(0)) revert NoDeploymentNFT();
+        // 检查付款
+        if (msg.value < $.cfg.costGwei * 1 gwei) revert InsufficientFunds();
+
+        $.remaining -= 1;
         uint256 requestId = _requestRandomWords(1);
         $.reqToAddress[requestId] = msg.sender;
         $.addressToReq[msg.sender].push(requestId);
-        /// @dev 更新请求的状态为：处理中
+        // 更新请求的状态为：处理中
         processingRequests.add(requestId, PROCESSING_CAP);
-        /// @dev 集合添加会自动去重
+        // 集合添加会自动去重
         allPlayers.add(msg.sender);
         emit GachaOne(msg.sender, requestId);
     }
@@ -194,9 +200,14 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @dev discountGachaTen 90 代表代表9折， 10% off
     function gachaTen() public payable whenNotPaused {
         PoolStorage storage $ = _getPoolStorage();
+
+        if ($.remaining < 10) revert OutOfStock();
+        if (address(GACHA_CARD_NFT) == address(0)) revert NoDeploymentNFT();
         if (msg.value < ($.cfg.costGwei * 1 gwei * $.cfg.discountGachaTen) / 10) {
             revert InsufficientFunds();
         }
+
+        $.remaining -= 10;
         uint256 requestId = _requestRandomWords(10);
         $.reqToAddress[requestId] = msg.sender;
         $.addressToReq[msg.sender].push(requestId);
@@ -214,11 +225,12 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         if (!(fulfilledRequests.contains(reqId))) revert ReqIdInvalid(false);
 
         PoolStorage storage $ = _getPoolStorage();
-        // TODO 验证签名
+
+        // 验证签名
         bytes32 msgHash = keccak256(abi.encodePacked(reqId, $.cfg.poolId, msg.sender, address(this)));
         if (msgHash.toEthSignedMessageHash().recoverCalldata(signature) != claimSigner) revert ECDSA.InvalidSignature();
 
-        /// @dev 更新请求的状态为：已领取
+        /// 更新请求的状态为：已领取
         fulfilledRequests.remove(reqId);
         claimedRequests.add(reqId);
 
@@ -319,7 +331,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     }
 
     /// @notice 查询 Config
-    /// @dev 注意顺序
+    /// @dev 注意返回值顺序
     function getPoolConfig() public view returns (uint64, uint32, uint32, uint8, bool, Rarity, uint8[5] memory) {
         PoolConfig storage cfg = _getPoolStorage().cfg;
         return (
@@ -351,6 +363,11 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     function getResult(uint256 reqId) public view returns (uint8, uint256[] memory, Rarity[] memory) {
         RandomResult storage result = _getPoolStorage().requests[reqId];
         return (result.numWords, result.words, result.rarity);
+    }
+
+    /// @notice 查询剩余抽卡次数
+    function getRemaining() public view returns (uint32) {
+        return _getPoolStorage().remaining;
     }
 
     // * 【 internal/private 函数】
