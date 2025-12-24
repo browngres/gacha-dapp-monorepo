@@ -411,9 +411,6 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     function _setPercentage(uint8[5] calldata _percentages) private {
         PoolStorage storage $ = _getPoolStorage();
 
-        if (_percentages.length != 5) {
-            revert InvalidRarityPercentage();
-        }
         uint sumPercentage;
         for (uint i; i < 5; i++) {
             sumPercentage += _percentages[i];
