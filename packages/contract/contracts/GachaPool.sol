@@ -63,8 +63,8 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     struct PoolStorage {
         PoolConfig cfg;
         uint32 remaining; // 剩余抽卡次数
-        mapping(uint256 reqId => address roller) reqToAddress; // 抽卡的地址
-        mapping(address roller => uint256[] requestIds) addressToReq; // 地址的抽卡记录
+        mapping(uint256 reqId => address player) reqToAddress; // 抽卡的地址
+        mapping(address player => uint256[] requestIds) addressToReq; // 地址的抽卡记录
         mapping(uint256 reqId => RandomResult) requests; // 所有结果记录
         // TODO UR 记录
     }
@@ -346,7 +346,19 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     /// @notice 查询 Config
     /// @dev 注意返回值顺序
-    function getPoolConfig() public view returns (uint64, uint32, uint32, uint8, bool, Rarity, uint8[5] memory) {
+    function getPoolConfig()
+        public
+        view
+        returns (
+            uint64 costGwei,
+            uint32 poolId,
+            uint32 supply,
+            uint8 discountGachaTen,
+            bool guarantee,
+            Rarity guaranteeRarity,
+            uint8[5] memory percentages
+        )
+    {
         PoolConfig storage cfg = _getPoolStorage().cfg;
         return (
             cfg.costGwei,
