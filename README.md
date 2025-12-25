@@ -57,6 +57,8 @@ wagmi 文档中列出来的[钱包连接器](https://wagmi.sh/react/guides/conne
 
 2025-12-25 本来打算使用 `ReentrancyGuardTransient，` solidity 0.8.24 引入的新的存储空间 transient 瞬态存储 (2024 cancun 升级)。 transient storage 和 storage 并列的，仅本交易中存储有效，非常适合重入锁。操作 transient 费用固定 100 gas，是后者的1/200。但是最近的以太坊 2025 osaka 升级后， gas price 下降了100倍以上，从以前正常个位数降低到零点零几，最近能见到 0.02。 transient 不那么诱人了🤣。。另外 Ganache 并不支持后来的操作码。所以决定用原本的 `ReentrancyGuard` 。
 
+2025-12-25 1511 多少有点笨了，签名端口忘记检查是否已经抽卡。意识到应该让前端用 tx 来证明。又意识到有了 tx 就可以读取事件，根本不用前端监听事件得到 reqId。 然后就发现自己费劲写了多么离谱的代码，gacha-step-one 竟然发起交易，并提前开始监听 event 得到参数。实际上，有了这个tx后可以直接得到 event。。。
+
 ### 参考资料
 
 #### 文档
