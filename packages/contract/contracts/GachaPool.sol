@@ -445,9 +445,13 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
         // 保底机制，修改数组中的最后一个
         if (result.numWords == 10 && $.cfg.guarantee) {
-            result.words[9] = 0;
-            result.rarity[9] = $.cfg.guaranteeRarity;
-            emit Guaranteed(requestId, $.cfg.guaranteeRarity);
+            // 有可能本来的稀有度比保底稀有度更好，防止被差的保底
+            Rarity guarantee = $.cfg.guaranteeRarity;
+            if (result.rarity[9] > guarantee) {
+                result.rarity[9] = guarantee;
+                result.words[9] = 0;
+            }
+            emit Guaranteed(requestId, guarantee);
         }
 
         $.requests[requestId] = result;
