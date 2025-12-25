@@ -23,6 +23,12 @@ import {ECDSA} from "solady/src/utils/ECDSA.sol";
 import {GachaCardNFT} from "./GachaCardNFT.sol";
 import {CREATE3} from "solady/src/utils/CREATE3.sol";
 
+// ReentrancyGuard
+/// @dev 如果网络兼容 transient 操作(2024 cancun 升级)，可以使用第二个。
+import {ReentrancyGuard} from "solady/src/utils/ReentrancyGuard.sol";
+
+// import {ReentrancyGuardTransient} from "solady/src/utils/ReentrancyGuardTransient.sol";
+
 /// @dev Only in Hardhat simulated network
 // import "hardhat/console.sol";
 
@@ -30,7 +36,7 @@ import {CREATE3} from "solady/src/utils/CREATE3.sol";
 备忘： whenNotPaused, whenPaused, nonReentrant
 */
 
-contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumerBaseV2PlusUpgradeable {
+contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumerBaseV2PlusUpgradeable, ReentrancyGuard {
     // * 【 类型声明 】
     /// @notice 稀有度
     /// @dev 如果不想要某个，不要删除，而是将其概率设置为 0
@@ -177,7 +183,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     // * 【 public 函数】
 
     /// @notice 单抽
-    function gachaOne() public payable whenNotPaused {
+    function gachaOne() public payable nonReentrant whenNotPaused {
         PoolStorage storage $ = _getPoolStorage();
         // 检查是否抽完
         if ($.remaining < 1) revert OutOfStock();
@@ -199,7 +205,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
 
     /// @notice 十连抽，费用打折
     /// @dev discountGachaTen 90 代表代表9折， 10% off
-    function gachaTen() public payable whenNotPaused {
+    function gachaTen() public payable nonReentrant whenNotPaused {
         PoolStorage storage $ = _getPoolStorage();
 
         if ($.remaining < 10) revert OutOfStock();
@@ -218,7 +224,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     }
 
     /// @notice 兑奖
-    function claim(uint256 reqId, bytes calldata signature) public returns (uint8 count) {
+    function claim(uint256 reqId, bytes calldata signature) public nonReentrant returns (uint8 count) {
         if (signature.length == 0) revert ECDSA.InvalidSignature();
 
         // reqId 必须在 fulfilled 集合中（随机数已经满足但未领取）

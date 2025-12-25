@@ -55,6 +55,8 @@ wagmi 文档中列出来的[钱包连接器](https://wagmi.sh/react/guides/conne
 
 2025-12-20 经过深思熟虑，抽卡然后 mint NFT 的流程，并不适合 merkle tree。因为这种不是事先构造好的树（白名单），或者后端非实时性的名单。频繁添加 leaf，马上使用其 proof，没有太大意义。于是决定从设计中移除 merkle。
 
+2025-12-25 本来打算使用 `ReentrancyGuardTransient，` solidity 0.8.24 引入的新的存储空间 transient 瞬态存储 (2024 cancun 升级)。 transient storage 和 storage 并列的，仅本交易中存储有效，非常适合重入锁。操作 transient 费用固定 100 gas，是后者的1/200。但是最近的以太坊 2025 osaka 升级后， gas price 下降了100倍以上，从以前正常个位数降低到零点零几，最近能见到 0.02。 transient 不那么诱人了🤣。。另外 Ganache 并不支持后来的操作码。所以决定用原本的 `ReentrancyGuard` 。
+
 ### 参考资料
 
 #### 文档
@@ -70,6 +72,8 @@ wagmi 文档中列出来的[钱包连接器](https://wagmi.sh/react/guides/conne
 - [daisyUI](https://daisyui.com/components/)
 - [tailwind](https://tailwindcss.com/docs/)
 - [TanStack Query](https://tanstack.com/query/)
+- [solady](https://vectorized.github.io/solady/)
+- [OpenZeppelin Contracts](https://docs.openzeppelin.com/contracts/5.x)
 
 #### 文章
 
@@ -90,3 +94,6 @@ wagmi 文档中列出来的[钱包连接器](https://wagmi.sh/react/guides/conne
 - [WTF Solidity极简入门: 25. CREATE2](https://github.com/AmazingAng/WTF-Solidity/blob/main/25_Create2/readme.md)
 
 - [When to use Storage vs. Memory vs. Calldata in Solidity](https://www.alchemy.com/docs/when-to-use-storage-vs-memory-vs-calldata-in-solidity)
+
+- [WTF Solidity 合约安全: S01. 重入攻击](https://github.com/AmazingAng/WTF-Solidity/blob/main/S01_ReentrancyAttack/readme.md)
+- [Transient Storage Opcodes in Solidity 0.8.24](https://www.soliditylang.org/blog/2024/01/26/transient-storage/)
