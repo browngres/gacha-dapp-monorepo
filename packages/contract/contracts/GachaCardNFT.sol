@@ -55,7 +55,7 @@ contract GachaCardNFT is ERC721, Ownable {
     }
 
     /// @dev 只能由 owner 指定稀有度 Mint。
-    function mint(address to, uint8 rarity) external onlyOwner {
+    function mintWithRarity(address to, uint8 rarity) external onlyOwner {
         uint256 id = _nextTokenId++;
         _setExtraData(id, rarity);
         _safeMint(to, id);

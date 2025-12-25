@@ -24,17 +24,12 @@ import {GachaCardNFT} from "./GachaCardNFT.sol";
 import {CREATE3} from "solady/src/utils/CREATE3.sol";
 
 // ReentrancyGuard
-/// @dev 如果网络兼容 transient 操作(2024 cancun 升级)，可以使用第二个。
-import {ReentrancyGuard} from "solady/src/utils/ReentrancyGuard.sol";
-
+/// @dev 如果网络兼容 transient 操作(2024 cancun 升级)，可以使用第一个。
 // import {ReentrancyGuardTransient} from "solady/src/utils/ReentrancyGuardTransient.sol";
+import {ReentrancyGuard} from "solady/src/utils/ReentrancyGuard.sol";
 
 /// @dev Only in Hardhat simulated network
 // import "hardhat/console.sol";
-
-/*
-备忘： whenNotPaused, whenPaused, nonReentrant
-*/
 
 contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumerBaseV2PlusUpgradeable, ReentrancyGuard {
     // * 【 类型声明 】
@@ -96,7 +91,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @dev 大部分状态变量定义成 config，使用 ERC7201 存储布局
     uint32 constant PROCESSING_CAP = 100; // 未结算的请求数量限制
     address public claimSigner; // claim 签名者
-    GachaCardNFT public GACHA_CARD_NFT;
+    GachaCardNFT public GACHA_CARD_NFT; // NFT 合约实例
 
     // ** GachaPool 记录相关
     /// @dev 映射存储使用 ERC7201 存储布局
@@ -140,6 +135,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     event Withdraw(address indexed withdrawer, uint value, uint timestamp); // 提款者，数量，时间
     event DeployedNFT(address);
     event NftUriChanged();
+    event NftMinted(uint256 indexed requestId, uint256 count);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     /// @dev 防止攻击者绕过代理直接调用实现合约的初始化
@@ -224,7 +220,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     }
 
     /// @notice 兑奖
-    function claim(uint256 reqId, bytes calldata signature) public nonReentrant returns (uint8 count) {
+    function claim(uint256 reqId, bytes calldata signature) public nonReentrant returns (uint256 count) {
         if (signature.length == 0) revert ECDSA.InvalidSignature();
 
         // reqId 必须在 fulfilled 集合中（随机数已经满足但未领取）
@@ -241,8 +237,14 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         fulfilledRequests.remove(reqId);
         claimedRequests.add(reqId);
 
-        // TODO mint
-        return 1;
+        // mint NFT
+        RandomResult memory request = $.requests[reqId];
+        uint8 length = request.numWords;
+        for (uint i = 0; i < length; i++) {
+            GACHA_CARD_NFT.mintWithRarity(msg.sender, uint8(request.rarity[i]));
+            count += 1;
+        }
+        emit NftMinted(reqId, count);
     }
 
     // * 【 admin 函数】
@@ -412,7 +414,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         fulfilledRequests.add(requestId);
 
         // 记录结果
-        /// @dev 另一种方法，使用指针指向存储区。多次操作存储浪费 gas
+        // 另一种方法，使用指针指向存储区。多次操作存储浪费 gas
         // RandomResult storage result;
         // result = requests[requestId];
         RandomResult memory result;
