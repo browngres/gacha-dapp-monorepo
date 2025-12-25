@@ -5,8 +5,8 @@ pragma solidity ^0.8.20;
 
 // import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 // import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
-import {VRFConsumerBaseV2Plus} from "./mock/VRF_Mock_flattened.sol";
-import {VRFV2PlusClient} from "./mock/VRF_Mock_flattened.sol";
+import {VRFConsumerBaseV2Plus} from "./VRF_Mock_flattened.sol";
+import {VRFV2PlusClient} from "./VRF_Mock_flattened.sol";
 
 contract RandomConsumer is VRFConsumerBaseV2Plus {
     uint256 immutable s_subscriptionId;

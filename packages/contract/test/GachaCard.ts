@@ -29,7 +29,7 @@ describe("GachaCard Unit Tests", function () {
     const newURI = "https://example.com/nft/"
     await nft.setBaseURI(newURI)
     // 通过 mint 一个 token 来检查 tokenURI
-    await nft.mint(user1.address, 1)
+    await nft.mintWithRarity(user1.address, 1)
     expect(await nft.tokenURI(0)).to.equal(newURI + "0")
 
     // onlyOwner
@@ -47,24 +47,24 @@ describe("GachaCard Unit Tests", function () {
 
   it("Mint", async function () {
     // Mint 第一个 token
-    await nft.mint(user1.address, 0)
+    await nft.mintWithRarity(user1.address, 0)
     expect(await nft.ownerOf(0)).to.equal(user1.address)
     expect(await nft.getRarity(0)).to.equal(0)
     expect(await nft.tokenURI(0)).to.equal("http://127.0.0.1/nft/0")
 
     // Mint 第二个 token
-    await nft.mint(user2.address, 3)
+    await nft.mintWithRarity(user2.address, 3)
     expect(await nft.ownerOf(1)).to.equal(user2.address)
     expect(await nft.getRarity(1)).to.equal(3)
     expect(await nft.tokenURI(1)).to.equal("http://127.0.0.1/nft/1")
 
     // 非 owner 不能 mint
-    await expect(nft.connect(user1).mint(user1.address, 1)).to.be.revertedWithCustomError(nft, "Unauthorized")
+    await expect(nft.connect(user1).mintWithRarity(user1.address, 1)).to.be.revertedWithCustomError(nft, "Unauthorized")
   })
 
   it("Transfer", async function () {
     // Mint 一个 token 给 user1
-    await nft.mint(user1.address, 2)
+    await nft.mintWithRarity(user1.address, 2)
     expect(await nft.ownerOf(0)).to.equal(user1.address)
 
     // user1 转移给 user2

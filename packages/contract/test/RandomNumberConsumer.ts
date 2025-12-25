@@ -24,7 +24,7 @@ describe("Random Number Consumer Unit Tests", function () {
     const fundAmount = ethers.parseEther("1") // 1 ether
     const tx = await VRFCoordinatorMock.createSubscription()
     const txReceipt = await tx.wait(1)
-    const subscriptionId = BigInt(txReceipt.logs[0].topics[1])
+    const subscriptionId = BigInt(txReceipt!.logs[0].topics[1])
     // console.log("log:",txReceipt.logs);
     // console.log("subscriptionId:",subscriptionId);
 
