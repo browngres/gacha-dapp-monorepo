@@ -230,7 +230,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         PoolStorage storage $ = _getPoolStorage();
 
         // 验证签名
-        bytes32 msgHash = keccak256(abi.encodePacked(reqId, $.cfg.poolId, msg.sender, address(this)));
+        bytes32 msgHash = keccak256(abi.encodePacked(reqId, msg.sender, address(this)));
         if (msgHash.toEthSignedMessageHash().recoverCalldata(signature) != claimSigner) revert ECDSA.InvalidSignature();
 
         /// 更新请求的状态为：已领取
@@ -394,6 +394,11 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     /// @notice 查询剩余抽卡次数
     function getRemaining() public view returns (uint32) {
         return _getPoolStorage().remaining;
+    }
+
+    /// @notice 查询玩家数量
+    function getPlayersCount() public view returns (uint256) {
+        return allPlayers.length();
     }
 
     // * 【 internal/private 函数】
