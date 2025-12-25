@@ -44,5 +44,16 @@ describe("GachaPool init Unit Tests", function () {
     const sub = await vrf.getSubscription(subId)
     expect(sub.consumers).to.be.lengthOf(1, "The subscription has one consumer.")
     expect(sub.balance).equal(ethers.parseEther("100"), "The subscription balance is 100.")
+
+    // 检查 remaining
+    expect(await gacha.getRemaining()).equal(100n)
+
+    // 检查 NFT
+    expect(await gacha.GACHA_CARD_NFT()).equal(ethers.ZeroAddress)
+
+    // 部署 NFT 合约
+    // create 3 的地址计算与 initCode 无关，也就是跟代码无关，只与部署者地址和salt 有关。
+    await gacha.deployGachaCardNFT("NFT", "NFT")
+    expect(await gacha.GACHA_CARD_NFT()).not.equal(ethers.ZeroAddress)
   })
 })
