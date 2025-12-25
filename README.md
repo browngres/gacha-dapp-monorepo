@@ -99,3 +99,6 @@ wagmi 文档中列出来的[钱包连接器](https://wagmi.sh/react/guides/conne
 
 - [WTF Solidity 合约安全: S01. 重入攻击](https://github.com/AmazingAng/WTF-Solidity/blob/main/S01_ReentrancyAttack/readme.md)
 - [Transient Storage Opcodes in Solidity 0.8.24](https://www.soliditylang.org/blog/2024/01/26/transient-storage/)
+
+- [ Wisps: The Magical World of Create2](https://blog.ricmoo.com/wisps-the-magical-world-of-create2-5c2177027604)
+- [What are the differences between create2 and create3?](https://ethereum.stackexchange.com/questions/145240/what-are-the-differences-between-create2-and-create3)

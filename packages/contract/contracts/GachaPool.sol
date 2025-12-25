@@ -325,6 +325,8 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
             abi.encodePacked(type(GachaCardNFT).creationCode, abi.encode(name, symbol, address(this))),
             keccak256(bytes("GachaPoolSalt"))
         );
+        // console.log("==== create3 address:");
+        // console.log(CREATE3.predictDeterministicAddress(keccak256(bytes("GachaPoolSalt"))));
         emit DeployedNFT(deployed);
         GACHA_CARD_NFT = GachaCardNFT(deployed);
     }
