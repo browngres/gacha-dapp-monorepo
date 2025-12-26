@@ -3,8 +3,8 @@ import { network } from "hardhat"
 const { ethers } = await network.connect()
 
 async function main() {
-  const gachaPool = await ethers.getContractAt("GachaPool", "0x402EF2428C40e7009D39E205450f422c519dfF51")
-  const vrf = await ethers.getContractAt("VRFCoordinatorV2_5Mock", "0x70e0C7a7b38d1185D468d316dFDd3e37A8AC5f93")
+  const gachaPool = await ethers.getContractAt("GachaPool", "0xcE5e33c6f131fAD365Eb9561cC339DFD2a884F16")
+  const vrf = await ethers.getContractAt("VRFCoordinatorV2_5Mock", "0x3E3C3912Fb1a992Ea94e7EC3E5b5D68E2818D858")
 
   // await gachaPool.pause()
   // await gachaPool.setPercentage([20,20,10,30,20])
@@ -13,11 +13,10 @@ async function main() {
   const ids = await vrf.getActiveSubscriptionIds(0, 10)
   console.log("subIds:", ids)
 
-  // gachaPool 实际上是第二个 consumer。第一个 consumer 是部署 VRF 带的一个。
-  const sub = await vrf.getSubscription(ids[1])
+  // const sub = await vrf.getSubscription(ids[1])
   // console.log("sub:", sub);
 
-  const balance = ethers.formatEther(sub[0])
+  // const balance = ethers.formatEther(sub[0])
   // console.log("balance", balance)
 
   // mock 任意充值，单位是 LINK，nonpayable
@@ -25,7 +24,7 @@ async function main() {
   // await vrf.fundSubscription(ids[1], ethers.parseEther("100"))
 
   /*
-  const gachaOneTime = async (): Promise<bigint> => {
+  const gachaTime = async (): Promise<bigint> => {
     // 发起一次请求，返回 reqId
     return new Promise<bigint>((resolve, reject) => {
       // 防止永远等不到事件（超时 3 秒）
@@ -42,14 +41,15 @@ async function main() {
     })
   }
 
-  const reqId = await gachaOneTime()
+  const reqId = await gachaTime()
   console.log(reqId)
   */
 
   // 给出指定的随机数
 
   // await vrf.fulfillRandomWordsWithOverride(reqId, gachaPool.target, [99999n])
-  // const tx = await vrf.fulfillRandomWordsWithOverride(180n, gachaPool.target, [1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 9n, 100n]  )
+  // const tx = await vrf.fulfillRandomWordsWithOverride(1n, gachaPool.target, [1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 99n, 99n]  )
+  // const tx = await vrf.fulfillRandomWordsWithOverride(reqId, gachaPool.target, [1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 99n, 99n]  )
   // console.log(tx);
 
   // const txReceipt = await tx.wait()
@@ -58,24 +58,16 @@ async function main() {
   // console.log(await gachaPool.getResult(reqId));
   // console.log(await gachaPool.getResult(183n))
 
-  // 向合约转账
-
-  const GANACHE_RPC_TEST_KEY_0 = process.env.GANACHE_RPC_TEST_KEY_0
-  const wallet0 = new ethers.Wallet(GANACHE_RPC_TEST_KEY_0!, ethers.provider)
-  console.log(wallet0.address);
-
-  const tx1 = await wallet0.sendTransaction({
-    to: gachaPool.target,
-    value: parseEther("1.0")
-  });
-  await tx1.wait();
 
   // GachaPool 部署 NFT
   // const tx2 = await gachaPool.deployGachaCardNFT("GachaCard","GC", "http://127.0.0.1/nft/","http://127.0.0.1/nft/contract-metadata.json")
   // await tx2.wait();
 
   // 检查合约的余额
-  console.log("GachaPool 余额", await ethers.provider.getBalance(gachaPool.target));
+  // console.log("GachaPool 余额", await ethers.provider.getBalance(gachaPool.target));
+  // await gachaPool.withdraw()
+
+  await gachaPool.claim(1n,"0x")
 
 }
 
