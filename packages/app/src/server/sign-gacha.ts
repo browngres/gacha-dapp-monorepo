@@ -1,35 +1,39 @@
 import { publicClient, signGachaClient } from "@/common/config"
 import {
   encodePacked,
-  getAddress,
+  isAddressEqual,
   // hashMessage,
   keccak256,
   parseEventLogs,
   // recoverMessageAddress,
 } from "viem"
-import type { Hash, Hex } from "viem"
+import type { Address, Hash, Hex } from "viem"
 import { ABI, CA } from "@/public/GachaPoolContract"
 
-export default async function signGacha(txHash: Hash): Promise<Hex> {
+export default async function signGacha(txHash: Hash): Promise<{ requestId: bigint; who: Address; signature: Hex }> {
+  const invalidReturn = { requestId: 0n, who: "0x" as `0x${string}`, signature: "0x" as `0x${string}` }
+
   let signature: Hex
 
   // 读取 tx 信息
   const [txReceipt, confirmations] = await Promise.all([
-    publicClient.getTransactionReceipt({ hash }),
-    publicClient.getTransactionConfirmations({ hash }),
+    publicClient.getTransactionReceipt({ hash: txHash }),
+    publicClient.getTransactionConfirmations({ hash: txHash }),
   ])
 
-  if (confirmations < 1) return "0x"
+  if (confirmations < 1) return invalidReturn
 
   const logs = parseEventLogs({
     abi: ABI,
-    logs: [txReceipt.logs[2]!], // GachaOne 是第三个 Log
+    logs: [txReceipt.logs[2]!], // GachaOne/GachaTen 是第三个 Log
   })
 
-  if (logs[0]?.eventName != "GachaOne") return "0x"
-  const { who, requestId } = logs[0].args
+  // 要么是 GachaOne 要么是 GachaTen
+  if (!["GachaOne", "GachaTen"].includes(logs[0]!.eventName.toString())) return invalidReturn
+  // 读取 Event 参数
+  const { who, requestId } = logs[0]!.args as { who: `0x${string}`; requestId: bigint }
 
-  if (getAddress(who) != getAddress(txReceipt.from)) return "0x" // 正常不可能出现
+  if (!isAddressEqual(who, txReceipt.from)) return invalidReturn // 正常不可能出现
 
   // 签名(requestId + 用户地址 + 合约地址)
   // 170 0xca9Fb58FB299d92C3c3353940faFF30f4d79217d  0x016286aA4713791e3FBd79e2D412897d81103ea8
@@ -40,8 +44,6 @@ export default async function signGacha(txHash: Hash): Promise<Hex> {
   signature = await signGachaClient.signMessage({
     message: { raw: msgHash },
   })
-  return signature
-}
 
-const hash = "0x33479623a02d7e33cb23f47e9e7930322e0e23750b45a41e4e15b64c2f3568dc"
-console.log("signature", await signGacha(hash))
+  return { requestId, who, signature }
+}

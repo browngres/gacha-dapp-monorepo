@@ -1,7 +1,10 @@
-import { randomUUIDv7, serve } from "bun"
-import index from "../public/index.html"
-
+import { serve } from "bun"
 import { Database } from "bun:sqlite"
+
+import index from "../public/index.html"
+import signGacha from "./sign-gacha"
+import { publicClient } from "@/common/config"
+import { ABI, CA } from "@/public/GachaPoolContract"
 // TODO logger
 
 // Initialize database
@@ -30,16 +33,33 @@ const server = serve({
 
     "/api/gacha/": {
       async POST(req) {
-        console.log("得到一次请求");
+        console.log("得到一次请求")
         // 对接前端的 gacha-step-two，签名并返回
-        const { pool, address, reqId } = await req.json()
-        // TODO 消息签名
-        await Bun.sleep(1000); // 模拟用时
-        const signature = "0x123" + randomUUIDv7().slice(24) // mock
+        // 前端提供 tx，后端从链上获得信息。防止没抽过就请求签名。
+        const { pool, txHash } = await req.json()
+        if (!txHash) {
+          return Response.json({ error: "No txHash" }, { status: 400 })
+        }
+        const [_, poolId] = await publicClient.readContract({
+          address: CA,
+          abi: ABI,
+          functionName: "getPoolConfig",
+        })
+        if (BigInt(pool) != BigInt(poolId)) {
+          return Response.json({ error: "Wrong poolId" }, { status: 400 })
+        }
+        // 消息签名
+        await Bun.sleep(1000) // 模拟用时
+        const { requestId, who, signature } = await signGacha(txHash)
+        // 如果根据 txHash 找不到链上信息
+        if (!requestId) {
+          return Response.json({ error: "Invalid txHash or RPC Error" }, { status: 400 })
+        }
+
         try {
           const result = db
             .query("INSERT INTO requests (poolId, address, requestId, signature) VALUES (?, ?, ?, ?) RETURNING *")
-            .get(pool, address, reqId, signature)
+            .get(poolId, who, requestId, signature)
 
           return Response.json(
             {
