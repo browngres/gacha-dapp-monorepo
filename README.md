@@ -69,7 +69,8 @@ wagmi 文档中列出来的[钱包连接器](https://wagmi.sh/react/guides/conne
 - [Bun Runtime](https://bun.com/docs)
 - [Bun Workspaces](https://bun.com/docs/pm/workspaces)
 - [Bun Bundler](https://bun.com/docs/bundler)
-- [React](https://zh-hans.react.dev/learn)-
+- [React](https://zh-hans.react.dev/learn)
+- [Viem](https://viem.sh/docs/getting-started)
 - [wagmi](https://wagmi.sh/react/getting-started)
 - [daisyUI](https://daisyui.com/components/)
 - [tailwind](https://tailwindcss.com/docs/)
