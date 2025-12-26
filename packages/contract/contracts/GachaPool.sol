@@ -220,24 +220,24 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
     }
 
     /// @notice 兑奖
+    /// @dev 先更改状态再 mint ，本身就防止重入了。
     function claim(uint256 reqId, bytes calldata signature) public nonReentrant returns (uint256 count) {
         if (signature.length == 0) revert ECDSA.InvalidSignature();
 
         // reqId 必须在 fulfilled 集合中（随机数已经满足但未领取）
         if (claimedRequests.contains(reqId)) revert ReqIdInvalid(true);
         if (!(fulfilledRequests.contains(reqId))) revert ReqIdInvalid(false);
-
-        PoolStorage storage $ = _getPoolStorage();
-
+    
         // 验证签名
-        bytes32 msgHash = keccak256(abi.encodePacked(reqId, msg.sender, address(this)));
+        bytes32 msgHash = keccak256(abi.encodePacked(reqId, msg.sender, address(this))); // 这里使用 msg.sender 已经防止了冒领。
         if (msgHash.toEthSignedMessageHash().recoverCalldata(signature) != claimSigner) revert ECDSA.InvalidSignature();
 
-        /// 更新请求的状态为：已领取
+        // 更新请求的状态为：已领取
         fulfilledRequests.remove(reqId);
         claimedRequests.add(reqId);
 
         // mint NFT
+        PoolStorage storage $ = _getPoolStorage();
         RandomResult memory request = $.requests[reqId];
         uint8 length = request.numWords;
         for (uint i = 0; i < length; i++) {
@@ -245,6 +245,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
             count += 1;
         }
         emit NftMinted(reqId, count);
+        return length;
     }
 
     // * 【 admin 函数】
