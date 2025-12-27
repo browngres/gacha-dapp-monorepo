@@ -122,6 +122,7 @@ function GachaWorkflow({ isBlurred, isTen, poolId }) {
   // 抽卡流程
   const [currStep, setCurrStep] = useState(0);
   const [reqId, setReqId] = useState<bigint>(0n);
+  const [txHash, setTxHash] = useState<`0x${string}`>("0x");
 
   return (
     <div className={`card grow bg-base-100 shadow-sm ${isBlurred && "blur-sm pointer-events-none select-none"}`}>
@@ -143,8 +144,15 @@ function GachaWorkflow({ isBlurred, isTen, poolId }) {
         </ul>
         {/* 右侧内容 */}
         <ul className="grid grid-rows-4 grow place-items-center">
-          <GachaStepOne isTen={isTen} currStep={currStep} setCurrStep={setCurrStep} reqId={reqId} setReqId={setReqId} />
-          <GachaStepTwo pool={poolId} currStep={currStep} setCurrStep={setCurrStep} reqId={reqId} />
+          <GachaStepOne
+            isTen={isTen}
+            currStep={currStep}
+            setCurrStep={setCurrStep}
+            reqId={reqId}
+            setReqId={setReqId}
+            setTxHash={setTxHash}
+          />
+          <GachaStepTwo pool={poolId} currStep={currStep} setCurrStep={setCurrStep} reqId={reqId} txHash={txHash} />
           <GachaStepThree currStep={currStep} setCurrStep={setCurrStep} reqId={reqId} />
           <GachaStepFour currStep={currStep} reqId={reqId} />
         </ul>

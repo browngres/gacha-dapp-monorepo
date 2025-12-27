@@ -4,7 +4,7 @@ import { useTransactionReceipt, useWaitForTransactionReceipt, useWriteContract }
 import { ABI, CA } from "@/public/GachaPoolContract";
 import { usePoolInfo } from "./read-gacha";
 
-export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId }) {
+export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId, setTxHash }) {
   console.log("render GachaStepOne");
   const gacha = useWriteContract();
   const { poolConfig } = usePoolInfo();
@@ -46,6 +46,8 @@ export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId }) 
       if (txReceipt.isSuccess) {
         const _reqId = fromHex(logs![2]!.data, "bigint");
         setReqId(_reqId);
+        console.log("ready to setTxHash, gacha.data", gacha.data);
+        setTxHash(gacha.data);
         setCurrStep(2);
       }
     }, [txReceipt.isSuccess]);
