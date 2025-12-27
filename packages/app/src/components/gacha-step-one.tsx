@@ -1,21 +1,18 @@
-import { useEffect, useState } from "react";
-import { parseUnits } from "viem";
-import { useConnection, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
-import { watchContractEvent } from "wagmi/actions";
+import { useEffect } from "react";
+import { fromHex, parseUnits } from "viem";
+import { useTransactionReceipt, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { ABI, CA } from "@/public/GachaPoolContract";
-import { config } from "@/common/config";
-import {  usePoolInfo } from "./read-gacha";
+import { usePoolInfo } from "./read-gacha";
 
 export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId }) {
   console.log("render GachaStepOne");
-  const [watchedReqId, setWatchedReqId] = useState(false);
   const gacha = useWriteContract();
-  const { poolConfig  } = usePoolInfo();
+  const { poolConfig } = usePoolInfo();
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!poolConfig){
+    if (!poolConfig) {
       throw new Error("No poolConfig");
     }
     setCurrStep(1);
@@ -32,37 +29,34 @@ export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId }) 
     });
   }
 
-  const { isSuccess } = useWaitForTransactionReceipt({ hash: gacha.data });
-  if (isSuccess) setCurrStep(2);
+  const { isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: gacha.data });
 
   function ReqId() {
-    // 监听 GachaOne 事件获取 reqId
-    const connection = useConnection();
-    useEffect(() => {
-      if (!watchedReqId) {
-        const unwatch = watchContractEvent(config, {
-          address: CA,
-          abi: ABI,
-          eventName: "GachaOne",
-          onLogs(logs) {
-            console.log("New logs!");
-            const reqId = logs[0]?.args.requestId;
-            const who = logs[0]?.args.who;
-            console.log("address", who);
-            console.log("reqId", reqId);
-            if (connection.address == who) {
-              setReqId(reqId!);
-            }
-            // 当接收到事件后，停止监听
-            unwatch();
-          },
-          pollingInterval: 1_000,
-        });
+    // 从 tx 获得 reqId
+    const txReceipt = useTransactionReceipt({
+      hash: gacha.data,
+      query: {
+        // 只有等到 gacha.data 有东西才能请求
+        enabled: !!gacha.data,
+      },
+    });
+    const logs = txReceipt.data?.logs;
 
-        setWatchedReqId(true);
+    useEffect(() => {
+      if (txReceipt.isSuccess) {
+        const _reqId = fromHex(logs![2]!.data, "bigint");
+        setReqId(_reqId);
+        setCurrStep(2);
       }
-    }, []);
-    return reqId === 0 ? <p>加载中</p> : <div> ReqId: {reqId}</div>;
+    }, [txReceipt.isSuccess]);
+
+    return !txReceipt.isSuccess ? (
+      <p>
+        ReqId: <span className="loading loading-infinity loading-sm"></span>
+      </p>
+    ) : (
+      <div> ReqId: {reqId}</div>
+    );
   }
 
   return (
@@ -79,8 +73,8 @@ export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId }) 
         )}
         抽卡+等待交易结果
         {gacha.data && <p className="wrap-anywhere text-[12px]">Transaction Hash: {gacha.data}</p>}
-        {isSuccess && <div> Transaction confirmed. </div>}
-        {currStep >= 1 && <ReqId />}
+        {txSuccess && <div> Transaction confirmed. </div>}
+        {currStep >= 1 && txSuccess && <ReqId />}
       </form>
     </li>
   );
