@@ -46,7 +46,6 @@ export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId, se
       if (txReceipt.isSuccess) {
         const _reqId = fromHex(logs![2]!.data, "bigint");
         setReqId(_reqId);
-        console.log("ready to setTxHash, gacha.data", gacha.data);
         setTxHash(gacha.data);
         setCurrStep(2);
       }
