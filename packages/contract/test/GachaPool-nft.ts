@@ -23,8 +23,6 @@ describe("GachaPool NFT Unit Tests", function () {
 
     await gachaPool.deployGachaCardNFT("NFT", "NFT")
     // 部署之后可以抽
-    await gachaPool.gachaOne({ value: ethers.parseEther("0.1") })
-    // !! bug 用 fixture 部署的没法成功请求随机数
     await expect(gachaPool.gachaOne({ value: ethers.parseEther("0.1") })).to.emit(gachaPool, "GachaOne")
     await expect(gachaPool.gachaTen({ value: ethers.parseEther("0.9") })).to.emit(gachaPool, "GachaTen")
   })

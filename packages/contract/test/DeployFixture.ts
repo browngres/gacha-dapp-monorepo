@@ -14,6 +14,8 @@ export async function deployVRFMockFixture() {
     WEI_PER_UNIT_LINK,
   ])
 
+  console.log("🚀 VRFCoordinatorMock address:", VRFCoordinatorMock.target)
+
   // 存款并订阅
   const fundAmount = ethers.parseEther("100") // 100 LINK
   const tx = await VRFCoordinatorMock.createSubscription()
@@ -21,12 +23,17 @@ export async function deployVRFMockFixture() {
   const subscriptionId = BigInt(txReceipt!.logs[0].topics[1])
   await VRFCoordinatorMock.fundSubscription(subscriptionId, fundAmount)
 
-  return { subscriptionId, VRFCoordinatorMock }
+  return { ethers, subscriptionId, VRFCoordinatorMock }
 }
 
 export async function deployGachaPoolFixture() {
-  const { ethers, networkHelpers } = await network.connect()
-  const { subscriptionId: subId, VRFCoordinatorMock: vrf } = await networkHelpers.loadFixture(deployVRFMockFixture)
+  // 嵌套了 fixture，这里不能重新连接一个 ethers，否则状态会消失。导致部署合约地址重叠
+  const { networkHelpers } = await network.connect()
+  const {
+    ethers,
+    subscriptionId: subId,
+    VRFCoordinatorMock: vrf,
+  } = await networkHelpers.loadFixture(deployVRFMockFixture)
 
   // 部署 GachaPool 实现和 Beacon
   const [deployer] = await ethers.getSigners()
