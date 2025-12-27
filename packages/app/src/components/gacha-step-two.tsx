@@ -58,7 +58,7 @@ export function GachaStepTwo({ pool, reqId, currStep, setCurrStep, txHash }) {
 
     // 更新为下一步骤
     useEffect(() => {
-      if (isSuccess) setCurrStep(3);
+      if (isSuccess && currStep == 2) setCurrStep(3); // 防止 step 抖动
     }, [isSuccess]);
 
     return (

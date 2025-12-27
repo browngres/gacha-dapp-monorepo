@@ -47,7 +47,7 @@ export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId, se
         const _reqId = fromHex(logs![2]!.data, "bigint");
         setReqId(_reqId);
         setTxHash(gacha.data);
-        setCurrStep(2);
+        if (currStep == 1) setCurrStep(2); // 防止 step 抖动
       }
     }, [txReceipt.isSuccess]);
 
