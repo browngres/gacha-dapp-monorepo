@@ -4,21 +4,25 @@ import { useConnection, useWaitForTransactionReceipt, useWriteContract } from "w
 import { watchContractEvent } from "wagmi/actions";
 import { ABI, CA } from "@/public/GachaPoolContract";
 import { config } from "@/common/config";
-import { getPoolInfo } from "./read-gacha";
+import {  usePoolInfo } from "./read-gacha";
 
 export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId }) {
   console.log("render GachaStepOne");
   const [watchedReqId, setWatchedReqId] = useState(false);
   const gacha = useWriteContract();
+  const { poolConfig  } = usePoolInfo();
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // 计算费用
-    const { costGwei, discountGachaTen } = (await getPoolInfo()) || [];
+
+    if (!poolConfig){
+      throw new Error("No poolConfig");
+    }
     setCurrStep(1);
+    // 计算费用
     const txValue = isTen
-      ? parseUnits(((10n * costGwei * BigInt(discountGachaTen)) / 100n).toString(), 9)
-      : parseUnits(BigInt(costGwei).toString(), 9);
+      ? parseUnits(((10n * poolConfig.costGwei * BigInt(poolConfig.discountGachaTen)) / 100n).toString(), 9)
+      : parseUnits(poolConfig.costGwei.toString(), 9);
     // 提交抽卡交易
     gacha.mutateAsync({
       address: CA,

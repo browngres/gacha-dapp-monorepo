@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { formatUnits } from "viem";
-import { type BaseError } from "wagmi";
 import { usePoolInfo } from "./read-gacha";
 import { GachaStepOne } from "./gacha-step-one";
 import { GachaStepTwo } from "./gacha-step-two";
@@ -9,24 +8,24 @@ import { GachaStepFour } from "./gacha-step-four";
 
 export function PoolInfoCard({ setIsBlurred, setIsTen, setPoolId }) {
   // 卡池展示
-  // TODO 将来从 pool manager 读取 pool 信息
-  const { data, error, isPending, isSuccess } = usePoolInfo();
-  const [_poolId, _costGwei, _percentages, _discountGachaTen] = data || [];
 
+  // TODO 将来从 pool manager 读取 pool 信息
+  const { poolConfig, error, isPending, isSuccess } = usePoolInfo();
   if (isPending)
     return (
-      <div>
-        <span className="loading loading-bars loading-xl"></span> Loading...
+      <div className="card bg-base-100 w-96 shadow-sm px-1 card-dash place-content-center">
+        <span className="loading loading-bars loading-xl mx-auto"></span>
+        <div>Loading...</div>
       </div>
     );
-  if (error) return <div>Error: {(error as BaseError).shortMessage || error.message}</div>;
+  if (error) return <div>Error: {error.shortMessage || error.message}</div>;
 
-  const poolId = isSuccess ? _poolId.result.toString() : "";
-  const cost = isSuccess ? formatUnits(_costGwei.result, 9) : "";
-  const percentages = isSuccess ? _percentages.result : [0, 0, 0, 0, 0];
-  const discountGachaTen = isSuccess ? _discountGachaTen.result.toString() : "";
+  const cost = formatUnits(poolConfig?.costGwei!, 9);
+  const poolId = poolConfig?.poolId;
+  const percentages = poolConfig?.percentages!;
+  const discountGachaTen = poolConfig?.discountGachaTen;
 
-  setPoolId(_poolId?.result);
+  setPoolId(poolId);
 
   return (
     <div className="card flex-none bg-base-100 w-96 shadow-sm px-1 card-dash">

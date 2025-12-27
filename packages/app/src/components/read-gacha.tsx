@@ -1,65 +1,39 @@
-import { useReadContracts } from "wagmi";
-import { readContracts } from "wagmi/actions";
-import { config } from "@/common/config";
+import { useMemo } from "react";
+import { useReadContract } from "wagmi";
 import { CA, ABI } from "@/public/GachaPoolContract";
 
+export type PoolConfig =
+  | {
+      costGwei: bigint;
+      poolId: number;
+      supply: number;
+      discountGachaTen: number;
+      guarantee: boolean;
+      guaranteeRarity: number;
+      percentages: readonly [number, number, number, number, number];
+    }
+  | undefined;
+
 export function usePoolInfo() {
-  const { data, error, isPending, isSuccess } = useReadContracts({
-    contracts: [
-      {
-        address: CA,
-        abi: ABI,
-        functionName: "poolId",
-      },
-      {
-        address: CA,
-        abi: ABI,
-        functionName: "costGwei",
-      },
-      {
-        address: CA,
-        abi: ABI,
-        functionName: "percentages",
-      },
-      {
-        address: CA,
-        abi: ABI,
-        functionName: "discountGachaTen",
-      },
-    ],
+  const { data, error, isPending, isSuccess } = useReadContract({
+    address: CA,
+    abi: ABI,
+    functionName: "getPoolConfig",
   });
-  return { data, error, isPending, isSuccess };
-}
+  // 直接从 data 计算，不需要额外的 state
+  const poolConfig = useMemo(() => {
+    if (!isSuccess || !data) return undefined;
 
-export async function getPoolInfo() {
-  const [_poolId, _costGwei, _percentages, _discountGachaTen] = await readContracts(config, {
-    contracts: [
-      {
-        address: CA,
-        abi: ABI,
-        functionName: "poolId",
-      },
-      {
-        address: CA,
-        abi: ABI,
-        functionName: "costGwei",
-      },
-      {
-        address: CA,
-        abi: ABI,
-        functionName: "percentages",
-      },
-      {
-        address: CA,
-        abi: ABI,
-        functionName: "discountGachaTen",
-      },
-    ],
-  });
-  const poolId = _poolId.status === "success" ? _poolId.result : 0;
-  const costGwei = _costGwei.status === "success" ? _costGwei.result : 0n;
-  const percentages = _percentages.status === "success" ? _percentages.result : [, , , ,];
-  const discountGachaTen = _discountGachaTen.status === "success" ? _discountGachaTen.result : 0;
+    return {
+      costGwei: data[0],
+      poolId: data[1],
+      supply: data[2],
+      discountGachaTen: data[3],
+      guarantee: data[4],
+      guaranteeRarity: data[5],
+      percentages: data[6],
+    };
+  }, [isSuccess, data]);
 
-  return { poolId, costGwei, percentages, discountGachaTen };
+  return { poolConfig, error, isPending, isSuccess };
 }
