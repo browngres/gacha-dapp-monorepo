@@ -74,8 +74,8 @@ export async function deployGachaPoolFixture() {
   // 将实现的 ABI 加载到代理上
   const proxy = await ethers.getContractAt("GachaPool", _proxy.target)
 
-  // 返回 VRFMock, subId, gachaPool 的实现、信标、代理。
-  return { vrf, subId, gachaPool, beacon, proxy }
+  // 返回 VRFMock, subId, gachaPool 的实现、信标、代理。 保留了状态的 ethers 实例
+  return { vrf, subId, gachaPool, beacon, proxy, ethers }
 }
 
 export default { deployVRFMockFixture, deployGachaPoolFixture }

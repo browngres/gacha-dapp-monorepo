@@ -5,10 +5,10 @@ import predictDeterministicAddress from "../scripts/predictDeterministicAddress.
 import { deployGachaPoolFixture } from "./DeployFixture.js"
 
 describe("GachaPool NFT Unit Tests", function () {
-  it.only("Should deployed before gacha", async function () {
+  it("Should deployed before gacha or setURI", async function () {
     // deployGachaPoolFixture 只部署 GachaPoll，没有调用部署 NFT 的方法
-    const { ethers, networkHelpers } = await network.connect()
-    const { proxy: gachaPool } = await networkHelpers.loadFixture(deployGachaPoolFixture)
+    const { networkHelpers } = await network.connect()
+    const { ethers, proxy: gachaPool } = await networkHelpers.loadFixture(deployGachaPoolFixture)
     expect(await gachaPool.GACHA_CARD_NFT()).equal(ethers.ZeroAddress)
 
     // 没有部署 NFT 不能抽
@@ -21,14 +21,29 @@ describe("GachaPool NFT Unit Tests", function () {
       "NoDeploymentNFT",
     )
 
+    // 没有部署 NFT 不能设置 URI
+    await expect(gachaPool.setNftUri("newBaseURI", "newContractURI")).to.be.revertedWithCustomError(
+      gachaPool,
+      "NoDeploymentNFT",
+    )
+
+    // 部署
     await gachaPool.deployGachaCardNFT("NFT", "NFT")
+    // !! 这个 ethers 必须是 fixture 给的，否则状态不一样
+    const nft = await ethers.getContractAt("GachaCardNFT", await gachaPool.GACHA_CARD_NFT())
+
     // 部署之后可以抽
     await expect(gachaPool.gachaOne({ value: ethers.parseEther("0.1") })).to.emit(gachaPool, "GachaOne")
     await expect(gachaPool.gachaTen({ value: ethers.parseEther("0.9") })).to.emit(gachaPool, "GachaTen")
+
+    // 部署之后可以设置
+    await gachaPool.setNftUri("https://new.example.com/nft/", "https://new.example.com/nft/contract-metadata.json")
+    console.log("nft", await nft.contractURI())
+    expect(await nft.tokenURI(1n)).equal("https://new.example.com/nft/1")
   })
 
   describe("CREATE3", function () {
-    it.only("Should successfully deployed NFT at the deterministic address", async function () {
+    it("Should successfully deployed NFT at the deterministic address", async function () {
       const { ethers, ignition } = await network.connect()
       const { proxy: _gacha } = await ignition.deploy(gachaPoolModule)
       const gachaPool = await ethers.getContractAt("GachaPool", _gacha.target)
@@ -97,7 +112,7 @@ describe("GachaPool NFT Unit Tests", function () {
       const gachaPool = await ethers.getContractAt("GachaPool", _gacha.target)
       const [_, another] = await ethers.getSigners()
 
-      const tx = await gachaPool
+      const tx = gachaPool
         .connect(another)
         .setNftUri("https://another.example.com/nft/", "https://another.example.com/nft/contract-metadata.json")
       await expect(tx).to.revertedWithCustomError(gachaPool, "AccessControlUnauthorizedAccount")
