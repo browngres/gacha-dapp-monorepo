@@ -1,6 +1,7 @@
 import { expect } from "chai"
 import { network } from "hardhat"
 import { deployGachaPoolFixture } from "./DeployFixture.js"
+import predictDeterministicAddress from "../scripts/predictDeterministicAddress.js"
 
 describe("GachaPool init Unit Tests", function () {
   it("Should successfully initialized with Fixture given config", async function () {
@@ -54,9 +55,11 @@ describe("GachaPool init Unit Tests", function () {
     // 部署 NFT 合约
     // create 3 的地址计算与 initCode 无关，也就是跟代码无关，只与部署者地址和salt 有关。
     await gacha.deployGachaCardNFT("NFT", "NFT")
+    const salt = ethers.keccak256(ethers.toUtf8Bytes("GachaPoolSalt"))
     // salt:  keccak256(bytes("GachaPoolSalt"))
     // 0xab8783a6a379b7674e450a4379caea3bb139d90cb243c7f7b17d4a608e184a53
-    // deployer: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
-    expect(await gacha.GACHA_CARD_NFT()).equal("0xC76473A6528DBf59971D3D206f8C4bb0F0De3236")
+    // deployer: 0x5FC8d32690cc91D4c39d9d3abcBD16989F875707
+    const predict = predictDeterministicAddress(salt,gacha.target)
+    expect(await gacha.GACHA_CARD_NFT()).equal(    ethers.getAddress(predict.toString()))
   })
 })

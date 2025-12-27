@@ -1,7 +1,6 @@
 import { expect } from "chai"
 import { network } from "hardhat"
 import gachaPoolModule from "../ignition/modules/GachaPool.js"
-import { randomBytes } from "crypto"
 import type { GachaPool, VRFCoordinatorV2_5Mock } from "../types/ethers-contracts/index.js"
 import { parseEther } from "ethers"
 

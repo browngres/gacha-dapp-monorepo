@@ -1,8 +1,8 @@
 import { expect } from "chai"
 import { network } from "hardhat"
 import gachaPoolModule from "../ignition/modules/GachaPool.js"
-import type { GachaPool, GachaCardNFT, VRFCoordinatorV2_5Mock } from "../types/ethers-contracts/index.js"
-import { EventLog, parseEther } from "ethers"
+import type { GachaPool, VRFCoordinatorV2_5Mock } from "../types/ethers-contracts/index.js"
+import { parseEther } from "ethers"
 
 // 测试抽卡流程，不包括兑奖
 describe("GachaPool GachaOne Unit Tests", function () {
@@ -89,7 +89,7 @@ describe("GachaPool GachaOne Unit Tests", function () {
   })
 
   it("Players and Results Count", async function () {
-    const [_, signer1,signer2] = await hh_ethers.getSigners()
+    const [_, signer1, signer2] = await hh_ethers.getSigners()
     // 初始值
     expect(await gachaPool.getPlayersCount()).equal(0n)
 
@@ -109,9 +109,8 @@ describe("GachaPool GachaOne Unit Tests", function () {
     // request 数量
     const requests1 = await gachaPool.getRequests(signer1)
     const requests2 = await gachaPool.getRequests(signer2)
-    expect(requests1).to.have.lengthOf(2);
-    expect(requests2).to.have.lengthOf(3);
-
+    expect(requests1).to.have.lengthOf(2)
+    expect(requests2).to.have.lengthOf(3)
   })
 })
 

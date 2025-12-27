@@ -24,6 +24,8 @@
     "clean": "bunx hardhat clean",
     "compile": "bunx hardhat compile",
     "test:gacha": "bunx hardhat test mocha --grep 'Gacha' --coverage --gas-stats",
+    "test:nft": "bunx hardhat test mocha ./test/GachaCard.ts --coverage --gas-stats",
+    "test:consumer": "bunx hardhat test mocha ./test/RandomNumberConsumer.ts --coverage --gas-stats",
     "ignition:vrf": "bunx hardhat ignition deploy ./ignition/modules/VRF.ts --network 'ganache_test' --deployment-id 'VRF-on-ganache_test' --build-profile 'ganache'",
     "ignition:gacha": "bunx hardhat ignition deploy ./ignition/modules/GachaPool.ts --network 'ganache_test' --deployment-id 'GachaPool-on-ganache_test' --build-profile 'ganache'",
     "feed-vrf": "bun run ./scripts/feedVRF.ts"

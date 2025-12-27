@@ -28,7 +28,7 @@ describe("GachaPool Claim Unit Tests", function () {
         ),
       ),
     )
-    console.log("signature", signature)
+    // console.log("signature", signature)
   })
 
   beforeEach("Deploy GachaPool", async function () {
