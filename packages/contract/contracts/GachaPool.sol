@@ -227,7 +227,7 @@ contract GachaPool is PausableUpgradeable, AccessControlUpgradeable, VRFConsumer
         // reqId 必须在 fulfilled 集合中（随机数已经满足但未领取）
         if (claimedRequests.contains(reqId)) revert ReqIdInvalid(true);
         if (!(fulfilledRequests.contains(reqId))) revert ReqIdInvalid(false);
-    
+
         // 验证签名
         bytes32 msgHash = keccak256(abi.encodePacked(reqId, msg.sender, address(this))); // 这里使用 msg.sender 已经防止了冒领。
         if (msgHash.toEthSignedMessageHash().recoverCalldata(signature) != claimSigner) revert ECDSA.InvalidSignature();

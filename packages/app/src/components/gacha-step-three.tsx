@@ -35,10 +35,14 @@ function WatchFulfill({ reqId, setCurrStep }) {
 
   // 更新为下一步骤
   if (done) setCurrStep(4);
-  return done ? <p>✅</p> : <span className="loading loading-spinner loading-md  text-secondary"></span>;
+  return done ? <p>✅</p> : <span className="loading loading-spinner loading-md text-secondary"></span>;
 }
 
 export function GachaStepThree({ reqId, currStep, setCurrStep }) {
+  console.log("render GachaStepThree");
+
+  console.log("GachaStepThree currStep", currStep);
+
   return (
     <li>
       <p>等待随机数 fulfill</p>
