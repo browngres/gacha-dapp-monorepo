@@ -40,9 +40,6 @@ function WatchFulfill({ reqId, setCurrStep }) {
 
 export function GachaStepThree({ reqId, currStep, setCurrStep }) {
   console.log("render GachaStepThree");
-
-  console.log("GachaStepThree currStep", currStep);
-
   return (
     <li>
       <p>等待随机数 fulfill</p>

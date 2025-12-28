@@ -69,7 +69,7 @@ export function GachaStepTwo({ pool, reqId, currStep, setCurrStep, txHash }) {
         ) : isError ? (
           <span>Error: {error.message}</span>
         ) : (
-          <span className="wrap-anywhere text-[12px]">{signature as string}</span>
+          <span className="wrap-anywhere text-[10px]">{signature as string}</span>
         )}
       </>
     );

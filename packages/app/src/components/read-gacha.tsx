@@ -14,6 +14,7 @@ export type PoolConfig =
     }
   | undefined;
 
+// 获取卡池配置
 export function usePoolInfo() {
   const { data, error, isPending, isSuccess } = useReadContract({
     address: CA,
@@ -36,4 +37,21 @@ export function usePoolInfo() {
   }, [isSuccess, data]);
 
   return { poolConfig, error, isPending, isSuccess };
+}
+
+// 获取卡池剩余
+export function usePoolRemaining() {
+  const { data, error, isPending, isSuccess } = useReadContract({
+    address: CA,
+    abi: ABI,
+    functionName: "getRemaining",
+  });
+  // 直接从 data 计算，不需要额外的 state
+  const remaining = useMemo(() => {
+    if (!isSuccess || !data) return undefined;
+
+    return data;
+  }, [isSuccess, data]);
+
+  return { remaining, error, isPending, isSuccess };
 }

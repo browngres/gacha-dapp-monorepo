@@ -46,6 +46,8 @@ function Result({ reqId }) {
 }
 
 export function GachaStepFour({ reqId, currStep }) {
+  console.log("render GachaStepFour");
+
   return (
     <li>
       <p>抽卡结果，点击 Emoji 翻转</p>

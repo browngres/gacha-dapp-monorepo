@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatUnits } from "viem";
-import { usePoolInfo } from "./read-gacha";
+import { usePoolInfo, usePoolRemaining } from "./read-gacha";
 import { GachaStepOne } from "./gacha-step-one";
 import { GachaStepTwo } from "./gacha-step-two";
 import { GachaStepThree } from "./gacha-step-three";
@@ -10,7 +10,16 @@ export function PoolInfoCard({ setIsBlurred, setIsTen, setPoolId }) {
   // 卡池展示
 
   // TODO 将来从 pool manager 读取 pool 信息
-  const { poolConfig, error, isPending, isSuccess } = usePoolInfo();
+  const { poolConfig, error, isPending } = usePoolInfo();
+  const { remaining } = usePoolRemaining();
+
+  // 用 useEffect 在渲染完成后更新父组件
+  useEffect(() => {
+    if (poolConfig?.poolId !== undefined) {
+      setPoolId(poolConfig.poolId);
+    }
+  }, [poolConfig?.poolId]); // 只在 poolId 变化时触发
+
   if (isPending)
     return (
       <div className="card bg-base-100 w-96 shadow-sm px-1 card-dash place-content-center">
@@ -24,8 +33,6 @@ export function PoolInfoCard({ setIsBlurred, setIsTen, setPoolId }) {
   const poolId = poolConfig?.poolId;
   const percentages = poolConfig?.percentages!;
   const discountGachaTen = poolConfig?.discountGachaTen;
-
-  setPoolId(poolId);
 
   return (
     <div className="card flex-none bg-base-100 w-96 shadow-sm px-1 card-dash">
@@ -75,7 +82,8 @@ export function PoolInfoCard({ setIsBlurred, setIsTen, setPoolId }) {
             </div>
           )}
         </div>
-        <progress className="progress w-56 mx-auto" value={0} max="100"></progress>
+        {/* 卡池剩余抽卡次数 */}
+        <progress className="progress w-56 mx-auto" value={remaining || 0} max="100"></progress>
         {/* 单抽、十连按钮 */}
         <div className="card-actions flex justify-between my-2 mx-6">
           <button
