@@ -159,6 +159,28 @@
 
 ### 随机数生命周期
 
+一个能向 VRF 请求随机数的合约，称之为 consumer ，应该继承 `VRFConsumerBaseV2Plus`。
+有这两个方法： `fulfillRandomWords`, `rawFulfillRandomWords`。
+前者需要自己实现，就是自定义的业务逻辑。后者是接收 VRF 回调获得随机数的的方法，已经实现不应该修改。
+当收到 VRF 回调时。 VRF 调用`rawFulfillRandomWords`，然后 `rawFulfillRandomWords` 调用 `fulfillRandomWords`。
+
+1. 用户向合约请求抽卡 `GachaOne` ---> `_requestRandomWords` ---> Pool 作为 consumer 调用 VRF 合约的 `requestRandomWords` 方法。卡池获得返回的 RequestId 并记录。
+2. VRF 的 `RandomWordsRequested` 事件被发出。 VRF 得到 requestId , consumer 等信息。
+3. 外部（预言机）给出随机数，并回调 consumer （就是卡池） 的 `rawFulfillRandomWords` 方法。
+4. `rawFulfillRandomWords` 会调用卡池的 `fulfillRandomWords`。 真正地将随机数记录下来，处理业务逻辑。
+5. mock feedVRF 的实现是监听事件并调用 mock 版本 VRF 的 `fulfillRandomWordsWithOverride` 方法。然后像真正的 VRF 一样调用 consumer 的 `rawFulfillRandomWords`。 只不过随机数来自于脚本的投喂。
+6. 卡池得到随机数后，计算 rarity，更新请求的状态、存储结果。
+
+**特别注意：**
+`fulfillRandomWords` 不得 revert。回调会使用底层 call 来调用 `fulfillRandomWords`，就算 call 失败也会继续下去，VRF 将这次请求记录为失败。
+
+```solidity
+bytes memory callReq = abi.encodeWithSelector(v.rawFulfillRandomWords.selector, _requestId, _words);
+(bool success, ) = _consumer.call{gas: req.callbackGasLimit}(callReq);
+```
+
+也就是说 VRF 不管你的业务逻辑，只管尝试向 consumer 给出随机数。记录 call 是否成功。没有重试机制。
+
 ### 后端
 
 bun + sqlite 记录抽卡序号
@@ -181,7 +203,6 @@ NFT contractURI
 ### 前端
 
 - [x] 基本的前端界面
-- [ ] 前端抽卡特效
 - [ ] “我的” NFT 显示面板
 - [ ] NFT hover-3d, indicator(Rarity)
 - [ ] winston logger
@@ -191,17 +212,17 @@ NFT contractURI
 - openzeppelin
   - [x] role, pauseable
   - [x] 信标代理
-  - [ ] ReentranceGuard
+  - [x] ReentranceGuard
 - [x] 编写测试
-  - [ ] 检查 coverage
-- [ ] 给合约代码添加 NatSpec 注释
-- [ ] 按照风格指南整理合约代码
-- [ ] 检查修饰符(role, pause, reentrance)
+  - [x] 检查 coverage
+- [x] 给合约代码添加 NatSpec 注释
+- [x] 按照风格指南整理合约代码
+- [x] 检查修饰符(role, pause, reentrance)
 - Gas 优化
-  - [ ] Gas report
-  - [ ] 存储槽优化
-- [ ] 随机数生命周期
-- [ ] ERC-7201 Namespaced 存储槽
+  - [x] Gas report
+  - [x] 存储槽优化
+- [x] 随机数生命周期
+- [x] ERC-7201 Namespaced 存储槽
 
 ### dev todo
 
