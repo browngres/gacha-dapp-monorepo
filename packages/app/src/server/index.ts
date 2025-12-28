@@ -37,15 +37,15 @@ const server = serve({
         // 对接前端的 gacha-step-two，签名并返回
         // 前端提供 tx，后端从链上获得信息。防止没抽过就请求签名。
         const { pool, txHash } = await req.json()
-        if (!txHash) {
-          return Response.json({ error: "No txHash" }, { status: 400 })
+        if (!txHash || !pool) {
+          return Response.json({ error: "No txHash or poolId" }, { status: 400 })
         }
         const [_, poolId] = await publicClient.readContract({
           address: CA,
           abi: ABI,
           functionName: "getPoolConfig",
         })
-        if (BigInt(pool) != BigInt(poolId)) {
+        if (BigInt(pool | 0) != BigInt(poolId)) {
           return Response.json({ error: "Wrong poolId" }, { status: 400 })
         }
         // 消息签名
