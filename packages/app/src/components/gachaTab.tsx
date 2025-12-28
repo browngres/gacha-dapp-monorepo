@@ -27,7 +27,12 @@ export function PoolInfoCard({ setIsBlurred, setIsTen, setPoolId }) {
         <div>Loading...</div>
       </div>
     );
-  if (error) return <div>Error: {error.shortMessage || error.message}</div>;
+  if (error)
+    return (
+      <div className="card bg-base-100 w-96 shadow-sm px-1 card-dash place-content-center">
+        <div>Error: {error.shortMessage || error.message}</div>;
+      </div>
+    );
 
   const cost = formatUnits(poolConfig?.costGwei!, 9);
   const poolId = poolConfig?.poolId;
