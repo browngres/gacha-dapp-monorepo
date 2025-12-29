@@ -8,27 +8,24 @@ export function GachaStepTwo({ pool, reqId, currStep, setCurrStep, txHash }) {
     // 获取签名的组件
     async function fetchSignature(): Promise<string> {
       try {
-        console.log("发出了一次请求");
+        console.log("发出了一次 fetchSignature 请求");
         const response = await fetch("/api/gacha/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ pool: Number(pool), txHash: txHash }),
         });
 
-        if (response.ok) {
-          // 存入 cookie
-          const _signature = (await response.json()).data.signature;
-          setSignatureCookie(_signature);
-          return _signature;
+        if (!response.ok) {
+          throw new Error("FetchClaimed Failed" + (await response.text()));
         }
-        if (response.status == 400) {
-          return Promise.reject(new Error("Fetch Failed: " + (await response.text())));
-        }
+        // 存入 cookie
+        const _signature = (await response.json()).data.signature;
+        setSignatureCookie(_signature);
+        return _signature;
       } catch (error) {
-        console.error(error);
-        return Promise.reject(new Error("Fetch Failed"));
+        console.error("fetchSignature error", error);
+        throw new Error("FetchClaimed Failed");
       }
-      return "";
     }
 
     // 设置 cookie

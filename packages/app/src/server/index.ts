@@ -100,21 +100,20 @@ const server = serve({
     "/api/claimed/": {
       async PUT(req) {
         // 将 reqId 的 claimed 设置为 true
+        console.log("得到一次 PUT claimed 请求")
         const { address, requestId } = await req.json()
 
         const result = db
-          .query("UPDATE requests SET claimed = 0 WHERE requestId = ? AND address = ? RETURNING *")
-          .get(address, requestId)
-
-        console.log(result)
+          .query("UPDATE requests SET claimed = 1 WHERE requestId = ? AND address = ? RETURNING *")
+          .get(requestId, address)
+        console.log("put claim result", result)
 
         return Response.json(
           {
             status: "ok",
-            data: result,
             timestamp: new Date().toISOString(),
           },
-          { status: 201 },
+          { status: 202 },
         )
       },
     },
