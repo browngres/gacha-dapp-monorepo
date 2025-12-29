@@ -1,3 +1,4 @@
+export const RARITY = ["UR", "SSR", "SR", "R", "N"] as const;
 export const CA = "0xcE5e33c6f131fAD365Eb9561cC339DFD2a884F16"
 export const ABI = [
   { inputs: [], stateMutability: "nonpayable", type: "constructor" },

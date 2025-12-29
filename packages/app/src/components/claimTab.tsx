@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useConnection } from "wagmi";
-import { usePoolInfo, useGachaRequests } from "./read-gacha";
+import { usePoolInfo, useGachaRequests, useGachaResult } from "./read-gacha";
 import { useQuery } from "wagmi/query";
 
 import { ClaimForm } from "./claimForm";
+import { RARITY } from "@/public/GachaPoolContract";
 
 export function ClaimTab() {
   const [reqId, setReqId] = useState<bigint>(0n);
@@ -62,6 +63,30 @@ export function ClaimTab() {
     return <div className="grid grid-cols-10 gap-3 px-8 my-1">{listItems}</div>;
   }
 
+  function GachaResult({ reqId }) {
+    // 加载 reqId 对应结果
+    const { data, error, isLoading } = useGachaResult(reqId);
+    const [numWords, __, rarity] = data || [0, , []];
+
+    const listItems = rarity.map((r) => (
+      <span className="badge badge-outline badge-primary badge-sm gap-2 w-10">{RARITY[r]}</span>
+    ));
+
+    return (
+      <div className="card w-96 bg-base-100 card-xs shadow-sm mx-auto">
+        <div className="card-body min-h-6 place-items-center">
+          {isLoading ? (
+            <span className="loading loading-spinner loading-md text-secondary"></span>
+          ) : !!error ? (
+            <div> Error: {error.shortMessage || error.message} </div>
+          ) : (
+            <div className={`grid grid-cols-${numWords == 1 ? 1 : 5} gap-2 my-2`}>{listItems}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container min-h-80">
       <span className="text-rotate text-4xl duration-4000">
@@ -76,12 +101,10 @@ export function ClaimTab() {
       <div>我的抽卡记录：</div>
       <RequestsList />
       <div className="divider"></div>
-      // TODO 结果展示
+      <div>抽卡结果展示: {reqId} </div>
+      <GachaResult reqId={reqId} />
+      <div className="divider"></div>
       <ClaimForm reqId={reqId} poolId={poolId} key={reqId} />
     </div>
   );
 }
-
-// function handleTextareaChange(e) {
-//   setAnswer(e.target.value);
-// }
