@@ -37,7 +37,8 @@ export function ClaimTab() {
         if (!response.ok) {
           throw new Error("FetchClaimed Failed");
         }
-        const claimedList = await response.json();
+        const _claimedList :[{requestId:string}] = await response.json();
+        const claimedList = _claimedList.map(item => BigInt(item.requestId));
         return claimedList;
       } catch (error) {
         console.error(error);

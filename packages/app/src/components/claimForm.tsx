@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { BaseError, useWriteContract, useWaitForTransactionReceipt, useConnection } from "wagmi";
+import { useQueryClient } from "@tanstack/react-query";
 import { useQuery } from "wagmi/query";
 import { ABI, CA } from "@/public/GachaPoolContract";
 
@@ -67,13 +68,22 @@ export function ClaimForm({ poolId, reqId, setReqId }) {
   const ClaimTxReceipt = useWaitForTransactionReceipt({ hash: ClaimTx.data });
 
   // 告诉后端已经 claimed
-  const claimedQuery = useQuery({
+  const PutClaimedQuery = useQuery({
     queryKey: ["claimed", poolId, reqId],
     queryFn: putClaimed,
     staleTime: 2 * 60 * 1000,
     enabled: ClaimTxReceipt.isSuccess,
   });
-  console.log("claimedQuery.isSuccess", claimedQuery.isSuccess);
+  console.log("claimedQuery.isSuccess", PutClaimedQuery.isSuccess);
+
+  // Claim 成功后重新获取 claimed 列表
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (ClaimTxReceipt.isSuccess) {
+      console.log("refetch claimed list");
+      queryClient.invalidateQueries({ queryKey: ["claimed", user] });
+    }
+  }, [ClaimTxReceipt.isSuccess]);
 
   return (
     <form onSubmit={submit}>

@@ -12,7 +12,7 @@ import { APITester } from "./components/APITester";
 
 export function App() {
   const [activeTab, setActiveTab] = useState<number>(1);
-
+  // TODO 切换钱包连接，重新渲染全部
   return (
     <div className="min-h-[800px]  w-5xl">
       <div className="navbar bg-base-100 shadow-sm">
