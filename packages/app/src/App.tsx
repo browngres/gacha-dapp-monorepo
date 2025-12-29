@@ -1,15 +1,18 @@
-import { APITester } from "./components/APITester";
-import "./styles/index.css";
+import { useState } from "react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
+import "./styles/index.css";
 import logo from "./public/logo.svg";
 import reactLogo from "./public/react.svg";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { SendTransaction } from "./components/send-tx";
 
 import { GachaTab } from "./components/gachaTab";
 import { ClaimTab } from "./components/claimTab";
+import { SendTransaction } from "./components/send-tx";
+import { APITester } from "./components/APITester";
 
 export function App() {
+  const [activeTab, setActiveTab] = useState<number>(1);
+
   return (
     <div className="min-h-[800px]  w-5xl">
       <div className="navbar bg-base-100 shadow-sm">
@@ -46,26 +49,25 @@ export function App() {
 
       <div className="container-sm mx-auto py-8 text-center relative z-10">
         <div className="tabs tabs-box min-w-3xl">
-          <input type="radio" name="my_tabs_1" className="tab" aria-label="Gacha" defaultChecked />
+          <input type="radio" name="my_tabs_1" className="tab" aria-label="Gacha" onInput={() => setActiveTab(1)} defaultChecked/>
           <div className="tab-content bg-base-100 border-base-300 p-6">
-            <GachaTab />
+            {activeTab == 1 && <GachaTab />}
           </div>
-
-          <input type="radio" name="my_tabs_1" className="tab" aria-label="Claim" />
+          <input type="radio" name="my_tabs_1" className="tab" aria-label="Claim" onInput={() => setActiveTab(2)} />
           <div className="tab-content bg-base-100 border-base-300 p-6">
-            <ClaimTab />
+            {activeTab == 2 && <ClaimTab />}
           </div>
-
-          <input type="radio" name="my_tabs_1" className="tab" aria-label="Mine" />
-          <div className="tab-content bg-base-100 border-base-300 p-6"></div>
-
-          <input type="radio" name="my_tabs_1" className="tab" aria-label="Admin" />
+          <input type="radio" name="my_tabs_1" className="tab" aria-label="Mine" onInput={() => setActiveTab(3)} />
           <div className="tab-content bg-base-100 border-base-300 p-6">
-            <SendTransaction />
+            {activeTab == 3 && <>Mine</>}
           </div>
-          <input type="radio" name="my_tabs_1" className="tab" aria-label="APITester" />
+          <input type="radio" name="my_tabs_1" className="tab" aria-label="Admin" onInput={() => setActiveTab(4)} />
           <div className="tab-content bg-base-100 border-base-300 p-6">
-            <APITester />
+            {activeTab == 4 && <SendTransaction />}
+          </div>
+          <input type="radio" name="my_tabs_1" className="tab" aria-label="APITester" onInput={() => setActiveTab(5)} />
+          <div className="tab-content bg-base-100 border-base-300 p-6">
+            {activeTab == 5 &&  <APITester />}
           </div>
         </div>
       </div>
