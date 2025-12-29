@@ -5,6 +5,7 @@ import index from "../public/index.html"
 import signGacha from "./sign-gacha"
 import { publicClient } from "@/common/config"
 import { ABI, CA } from "@/public/GachaPoolContract"
+import { isAddress } from "viem"
 // TODO logger
 
 // Initialize database
@@ -16,6 +17,7 @@ db.run(`
     poolId INTEGER NOT NULL CHECK(poolId > 0),
     requestId TEXT NOT NULL CHECK(requestId > 0),
     signature CHAR(132) NOT NULL,
+    claimed INTEGER NOT NULL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(poolId, address, requestId)
   )
@@ -58,8 +60,10 @@ const server = serve({
 
         try {
           const result = db
-            .query("INSERT INTO requests (poolId, address, requestId, signature) VALUES (?, ?, ?, ?) RETURNING *")
-            .get(poolId, who, requestId, signature)
+            .query(
+              "INSERT INTO requests (poolId, address, requestId, signature, claimed) VALUES (?, ?, ?, ?,? ) RETURNING *",
+            )
+            .get(poolId, who, requestId, signature, 0)
 
           return Response.json(
             {
@@ -75,6 +79,43 @@ const server = serve({
           console.error(error)
           return Response.json({ error: "Database Error. Maybe data already exists." }, { status: 400 })
         }
+      },
+    },
+
+    "/api/claimed/:address": {
+      // 获取地址已经 claimed 的 reqId
+      async GET(req) {
+        const { address } = req.params;
+        if (!isAddress(address)) {
+          return Response.json({ error: "Invalid address" }, { status: 400 })
+        }
+        await Bun.sleep(1000) // 模拟用时
+        // 由于开启了 safeIntegers, 所有数字类型使用 bigint
+        const claimed = db.query("SELECT requestId FROM requests WHERE address = ? AND claimed = ?").all(address, 1n)
+        // console.log("后端查到的:", claimed);  // 列表
+        return Response.json(claimed)
+      },
+    },
+
+    "/api/claimed/": {
+      async PUT(req) {
+        // 将 reqId 的 claimed 设置为 true
+        const { address, requestId } = await req.json()
+
+        const result = db
+          .query("UPDATE requests SET claimed = 0 WHERE requestId = ? AND address = ? RETURNING *")
+          .get(address, requestId)
+
+        console.log(result)
+
+        return Response.json(
+          {
+            status: "ok",
+            data: result,
+            timestamp: new Date().toISOString(),
+          },
+          { status: 201 },
+        )
       },
     },
 
