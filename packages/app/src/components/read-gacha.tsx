@@ -58,7 +58,7 @@ export function usePoolRemaining() {
 }
 
 // 获取抽卡记录
-export function useRequests(by: Address) {
+export function useGachaRequests(by: Address) {
   const { data, error, isPending, isSuccess } = useReadContract({
     address: CA,
     abi: ABI,
@@ -67,4 +67,18 @@ export function useRequests(by: Address) {
   });
 
   return { data, error, isPending, isSuccess };
+}
+
+// 获取抽卡结果
+export function useGachaResult(reqId: bigint) {
+  const { data, error, isLoading, isSuccess } = useReadContract({
+    address: CA,
+    abi: ABI,
+    functionName: "getResult",
+    args: [reqId],
+    query: {
+      enabled: !!reqId,
+    },
+  });
+  return { data, error, isLoading, isSuccess };
 }

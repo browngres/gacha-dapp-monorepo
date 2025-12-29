@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useConnection } from "wagmi";
-import { usePoolInfo, useRequests } from "./read-gacha";
+import { usePoolInfo, useGachaRequests } from "./read-gacha";
 import { useQuery } from "wagmi/query";
 
 import { ClaimForm } from "./claimForm";
@@ -22,7 +22,7 @@ export function ClaimTab() {
     // 请求玩家抽卡记录
     const connection = useConnection();
     const user = connection.address;
-    const { data, error: requestsError, isPending: requestPending } = useRequests(user!);
+    const { data, error: requestsError, isPending: requestPending } = useGachaRequests(user!);
     const requests = data || [];
 
     // 获取地址已经 claimed 的记录
