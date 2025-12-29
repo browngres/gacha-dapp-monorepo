@@ -104,7 +104,7 @@ export function ClaimTab() {
       <div>抽卡结果展示: {reqId} </div>
       <GachaResult reqId={reqId} />
       <div className="divider"></div>
-      <ClaimForm reqId={reqId} poolId={poolId} key={reqId} />
+      <ClaimForm reqId={reqId} setReqId={setReqId} poolId={poolId} key={reqId} />
     </div>
   );
 }

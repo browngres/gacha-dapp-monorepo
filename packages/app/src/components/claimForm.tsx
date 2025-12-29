@@ -1,10 +1,18 @@
-import { useEffect, type FormEvent } from "react";
-import { BaseError, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useEffect, useState, type FormEvent } from "react";
+import { BaseError, useWriteContract, useWaitForTransactionReceipt, useConnection } from "wagmi";
 import { useQuery } from "wagmi/query";
 import { ABI, CA } from "@/public/GachaPoolContract";
 
-export function ClaimForm({ poolId, reqId }) {
+export function ClaimForm({ poolId, reqId, setReqId }) {
+  const [input, setInput] = useState<string>("");
   const ClaimTx = useWriteContract();
+  const connection = useConnection();
+  const user = connection.address;
+
+  // 输入框单向获取 reqId 值
+  useEffect(() => {
+    setInput(reqId);
+  }, [reqId]);
 
   function getSignatureCookie(pool: number, reqId: bigint): string {
     const pattern = new RegExp(`Gacha_${pool}_${reqId}_signature=(0x[0-9a-fA-F]+?)(?:;|$)`);
@@ -12,8 +20,23 @@ export function ClaimForm({ poolId, reqId }) {
     return match ? decodeURIComponent(match[1]!) : "0x";
   }
 
-  async function postClaimed() {
-    // todo
+  async function putClaimed() {
+    // 通知后端 claim 成功
+    console.log("发出了一次 putClaimed 请求");
+    try {
+      const response = await fetch("/api/claimed/", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: user, requestId: Number(reqId) }),
+      });
+      if (!response.ok) {
+        throw new Error("putClaimed Failed");
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("putClaimed", error);
+      throw new Error("putClaimed Failed");
+    }
   }
 
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -23,7 +46,7 @@ export function ClaimForm({ poolId, reqId }) {
     // 从 cookie 中获取签名
     let signature = getSignatureCookie(poolId, reqId);
     if (signature == "0x") {
-      // TODO 向后端请求签名
+      // TODO 向后端查询签名
       signature = "0x123";
     }
     console.log("提交的 signature ", signature);
@@ -43,18 +66,14 @@ export function ClaimForm({ poolId, reqId }) {
 
   const ClaimTxReceipt = useWaitForTransactionReceipt({ hash: ClaimTx.data });
 
+  // 告诉后端已经 claimed
   const claimedQuery = useQuery({
     queryKey: ["claimed", poolId, reqId],
-    queryFn: postClaimed,
+    queryFn: putClaimed,
     staleTime: 2 * 60 * 1000,
+    enabled: ClaimTxReceipt.isSuccess,
   });
-
-  // 告诉后端已经 claimed
-  useEffect(() => {
-    if (ClaimTxReceipt.isSuccess) {
-      // TODO 告诉后端已经 claimed
-    }
-  }, [ClaimTxReceipt.isSuccess]);
+  console.log("claimedQuery.isSuccess", claimedQuery.isSuccess);
 
   return (
     <form onSubmit={submit}>
@@ -71,6 +90,8 @@ export function ClaimForm({ poolId, reqId }) {
             max="100"
             name="reqId"
             title="Must be between 1 to 100"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
           />
           <button className="btn btn-primary join-item" disabled={ClaimTx.isPending} type="submit">
             Claim
