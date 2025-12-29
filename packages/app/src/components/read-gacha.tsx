@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { Address } from "viem";
 import { useReadContract } from "wagmi";
 import { CA, ABI } from "@/public/GachaPoolContract";
 
@@ -54,4 +55,16 @@ export function usePoolRemaining() {
   }, [isSuccess, data]);
 
   return { remaining, error, isPending, isSuccess };
+}
+
+// 获取抽卡记录
+export function useRequests(by: Address) {
+  const { data, error, isPending, isSuccess } = useReadContract({
+    address: CA,
+    abi: ABI,
+    functionName: "getRequests",
+    args: [by],
+  });
+
+  return { data, error, isPending, isSuccess };
 }

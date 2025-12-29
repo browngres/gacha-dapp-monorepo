@@ -134,6 +134,9 @@
 
 ### 安全考虑
 
+reqId 的状态不设置公开的方法可以查到（ `processingRequests`, `fulfilledRequests`, `claimedRequests`）不设置 getter 函数。
+使用后端存储是否 claimed。
+
 抽卡失败/随机数获取失败
 
 **VRF 安全注意事项**：

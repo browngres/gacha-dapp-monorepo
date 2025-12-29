@@ -7,6 +7,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SendTransaction } from "./components/send-tx";
 
 import { GachaTab } from "./components/gachaTab";
+import { ClaimTab } from "./components/claimTab";
 
 export function App() {
   return (
@@ -51,7 +52,9 @@ export function App() {
           </div>
 
           <input type="radio" name="my_tabs_1" className="tab" aria-label="Claim" />
-          <div className="tab-content bg-base-100 border-base-300 p-6"></div>
+          <div className="tab-content bg-base-100 border-base-300 p-6">
+            <ClaimTab />
+          </div>
 
           <input type="radio" name="my_tabs_1" className="tab" aria-label="Mine" />
           <div className="tab-content bg-base-100 border-base-300 p-6"></div>
