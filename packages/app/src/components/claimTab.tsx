@@ -1,11 +1,22 @@
-import type { Address } from "viem";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useConnection } from "wagmi";
-import { useRequests } from "./read-gacha";
+import { usePoolInfo, useRequests } from "./read-gacha";
 import { useQuery } from "wagmi/query";
+
+import { ClaimForm } from "./claimForm";
 
 export function ClaimTab() {
   const [reqId, setReqId] = useState<bigint>(0n);
+  const [poolId, setPoolId] = useState(0);
+
+  const { poolConfig } = usePoolInfo();
+
+  useEffect(() => {
+    // 加载 poolId
+    if (poolConfig?.poolId !== undefined) {
+      setPoolId(poolConfig.poolId);
+    }
+  }, [poolConfig?.poolId]);
 
   function RequestsList() {
     // 请求玩家抽卡记录
@@ -15,42 +26,41 @@ export function ClaimTab() {
     const requests = data || [];
 
     // 获取地址已经 claimed 的记录
-
     async function fetchClaimed(): Promise<bigint[]> {
       try {
         console.log("发出了一次 fetchClaimed 请求");
-        const response = await fetch("/api/claimed/", {
-          method: "POST",
+        const response = await fetch("/api/claimed/" + user, {
+          method: "GET",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ who: user }),
         });
-
-        if (response.ok) {
-          const claimedList = await response.json();
-          return [1n, 2n, 3n];
-          // TODO return claimedList.data;
+        if (!response.ok) {
+          throw new Error("FetchClaimed Failed");
         }
-        if (response.status == 400) {
-          return Promise.reject(new Error("FetchClaimed Failed"));
-        }
+        const claimedList = await response.json();
+        return claimedList;
       } catch (error) {
         console.error(error);
-        return Promise.reject(new Error("FetchClaimed Failed"));
+        throw new Error("FetchClaimed Failed");
       }
-      return [0n];
     }
 
-    // 请求签名的 Query
-    const claimQuery = useQuery({ queryKey: ["claimed", user], queryFn: fetchClaimed, staleTime: 2 * 60 * 1000 });
+    const claimedQuery = useQuery({ queryKey: ["claimed", user], queryFn: fetchClaimed, staleTime: 2 * 60 * 1000 });
+    const claimedList = (claimedQuery.data as bigint[]) ?? [];
+    console.log("claimedQuery.data", claimedQuery.data);
 
-
-    const listItems = requests.map((reqId) => <button className="btn btn-outline btn-sm">{reqId}</button>);
+    const listItems = requests.map((reqId) => (
+      // 如果已经 claim, 按钮使用虚线框
+      <button
+        className={claimedList.includes(reqId) ? "btn btn-dash" : "btn btn-outline"}
+        key={reqId}
+        onClick={() => setReqId(reqId)}
+      >
+        {reqId}
+      </button>
+    ));
+    // TODO loading
     return <div className="grid grid-cols-10 gap-3 px-8 my-1">{listItems}</div>;
   }
-
-  // TODO claim  tx 之后 refetch claimed
-  //  claimQuery.refetch()
-
 
   return (
     <div className="container min-h-80">
@@ -63,21 +73,11 @@ export function ClaimTab() {
         </span>
       </span>
       <div className="divider"></div>
-
       <div>我的抽卡记录：</div>
-
       <RequestsList />
-
-      <input
-        type="number"
-        className="input validator"
-        required
-        placeholder="Type a number between 1 to 10"
-        min="1"
-        max="10"
-        title="Must be between be 1 to 10"
-      />
-      <p className="validator-hint">Must be between be 1 to 10</p>
+      <div className="divider"></div>
+      // TODO 结果展示
+      <ClaimForm reqId={reqId} poolId={poolId} key={reqId} />
     </div>
   );
 }
