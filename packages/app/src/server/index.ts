@@ -85,7 +85,7 @@ const server = serve({
     "/api/claimed/:address": {
       // 获取地址已经 claimed 的 reqId
       async GET(req) {
-        const { address } = req.params;
+        const { address } = req.params
         if (!isAddress(address)) {
           return Response.json({ error: "Invalid address" }, { status: 400 })
         }
@@ -115,6 +115,28 @@ const server = serve({
             timestamp: new Date().toISOString(),
           },
           { status: 201 },
+        )
+      },
+    },
+
+    "/api/signature/": {
+      async POST(req) {
+        // 查询 reqId 对应的签名
+        const { address, poolId, requestId } = await req.json()
+
+        const result = db
+          .query("SELECT signature FROM requests WHERE address = ? AND poolId = ? AND requestId = ?")
+          .get(address, poolId, requestId)
+
+        console.log(result)
+
+        return Response.json(
+          {
+            status: "ok",
+            data: result,
+            timestamp: new Date().toISOString(),
+          },
+          { status: 200 },
         )
       },
     },
