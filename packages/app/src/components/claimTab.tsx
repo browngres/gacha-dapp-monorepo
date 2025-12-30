@@ -37,8 +37,8 @@ export function ClaimTab() {
         if (!response.ok) {
           throw new Error("FetchClaimed Failed");
         }
-        const _claimedList :[{requestId:string}] = await response.json();
-        const claimedList = _claimedList.map(item => BigInt(item.requestId));
+        const _claimedList: [{ requestId: string }] = await response.json();
+        const claimedList = _claimedList.map((item) => BigInt(item.requestId));
         return claimedList;
       } catch (error) {
         console.error(error);
@@ -77,11 +77,11 @@ export function ClaimTab() {
       <div className="card w-96 bg-base-100 card-xs shadow-sm mx-auto">
         <div className="card-body min-h-6 place-items-center">
           {isLoading ? (
-            <span className="loading loading-spinner loading-md text-secondary"></span>
+            <span className="loading loading-spinner loading-lg"></span>
           ) : !!error ? (
             <div> Error: {error.shortMessage || error.message} </div>
           ) : (
-            <div className={`grid grid-cols-${numWords == 1 ? 1 : 5} gap-2 my-2`}>{listItems}</div>
+            <div className={`grid ${numWords == 1 ? "grid-cols-1": "grid-cols-5"} gap-4 my-2`}>{listItems}</div>
           )}
         </div>
       </div>
@@ -105,7 +105,7 @@ export function ClaimTab() {
       <div>抽卡结果展示: {reqId} </div>
       <GachaResult reqId={reqId} />
       <div className="divider"></div>
-      <ClaimForm reqId={reqId} setReqId={setReqId} poolId={poolId} key={reqId} />
+      <ClaimForm reqId={reqId} setReqId={setReqId} poolId={poolId} />
     </div>
   );
 }

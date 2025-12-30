@@ -118,17 +118,13 @@ const server = serve({
       },
     },
 
-    "/api/signature/": {
-      async POST(req) {
+    "/api/signature/:poolId/:requestId/:address": {
+      async GET(req) {
         // 查询 reqId 对应的签名
-        const { address, poolId, requestId } = await req.json()
-
+        const { poolId, requestId, address } = req.params
         const result = db
           .query("SELECT signature FROM requests WHERE address = ? AND poolId = ? AND requestId = ?")
           .get(address, poolId, requestId)
-
-        console.log(result)
-
         return Response.json(
           {
             status: "ok",

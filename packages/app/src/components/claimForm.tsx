@@ -40,6 +40,25 @@ export function ClaimForm({ poolId, reqId, setReqId }) {
     }
   }
 
+  async function getSignature() {
+    // 向后端查询签名
+    console.log("发出了一次 getSignature 请求");
+    try {
+      const response = await fetch(`/api/signature/${poolId}/${reqId}/${user}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        throw new Error("getSignature Failed");
+      }
+      const res = await response.json();
+      return res.data.signature;
+    } catch (error) {
+      console.error("getSignature", error);
+      throw new Error("getSignature Failed");
+    }
+  }
+
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
@@ -47,8 +66,8 @@ export function ClaimForm({ poolId, reqId, setReqId }) {
     // 从 cookie 中获取签名
     let signature = getSignatureCookie(poolId, reqId);
     if (signature == "0x") {
-      // TODO 向后端查询签名
-      signature = "0x123";
+      // 向后端查询签名
+      signature = await getSignature();
     }
     console.log("提交的 signature ", signature);
 
@@ -74,7 +93,6 @@ export function ClaimForm({ poolId, reqId, setReqId }) {
     staleTime: 2 * 60 * 1000,
     enabled: ClaimTxReceipt.isSuccess,
   });
-  console.log("claimedQuery.isSuccess", PutClaimedQuery.isSuccess);
 
   // Claim 成功后重新获取 claimed 列表
   const queryClient = useQueryClient();
@@ -89,7 +107,6 @@ export function ClaimForm({ poolId, reqId, setReqId }) {
     <form onSubmit={submit}>
       <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-sm mx-auto p-4">
         <legend className="fieldset-legend">Claim</legend>
-        <label className="label">ReqId</label>
         <div className="join my-2">
           <input
             type="number"
