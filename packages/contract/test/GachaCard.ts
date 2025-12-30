@@ -78,4 +78,20 @@ describe("GachaCard Unit Tests", function () {
       "NotOwnerNorApproved",
     )
   })
+
+  it("TokensOf", async function () {
+    // Mint token 给 user1
+    await nft.mintWithRarity(user1.address, 0)
+    await nft.mintWithRarity(user1.address, 0)
+    await nft.mintWithRarity(user1.address, 0)
+    expect(await nft.balanceOf(user1.address)).to.equal(3)
+    // 检查 tokensOf
+    expect(await nft.tokensOf(user1.address)).to.have.members([0n, 1n, 2n])
+    expect(await nft.tokensOf(user2.address)).to.be.empty
+    // user1 转移给 user2
+    await nft.connect(user1).transferFrom(user1.address, user2.address, 0)
+    // 检查 tokensOf
+    expect(await nft.tokensOf(user1.address)).to.have.members([1n, 2n])
+    expect(await nft.tokensOf(user2.address)).to.have.members([0n])
+  })
 })
