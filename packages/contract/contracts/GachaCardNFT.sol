@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 import {ERC721} from "solady/src/tokens/ERC721.sol";
-import {LibString} from "solady/src/utils/LibString.sol";
 import {Ownable} from "solady/src/auth/Ownable.sol";
+import {LibString} from "solady/src/utils/LibString.sol";
+import {EnumerableSetLib} from "solady/src/utils/EnumerableSetLib.sol";
 
 contract GachaCardNFT is ERC721, Ownable {
     string private _name;
@@ -12,6 +13,9 @@ contract GachaCardNFT is ERC721, Ownable {
     uint256 private _nextTokenId;
 
     using LibString for uint256;
+    using EnumerableSetLib for EnumerableSetLib.Uint256Set;
+
+    mapping(address => EnumerableSetLib.Uint256Set) _tokensOf;
 
     constructor(string memory name_, string memory symbol_, address initialOwner) {
         _name = name_;
@@ -59,5 +63,20 @@ contract GachaCardNFT is ERC721, Ownable {
         uint256 id = _nextTokenId++;
         _setExtraData(id, rarity);
         _safeMint(to, id);
+    }
+
+    /// @notice 读取地址持有的 token 列表
+    function tokensOf(address owner) public view returns (EnumerableSetLib.Uint256Set memory tokens) {
+        return _tokensOf[owner];
+    }
+
+    /// @dev Hook 函数记录地址的持有 token，方便查询
+    function _beforeTokenTransfer(address from, address to, uint256 id) internal override {
+        if (from != address(0)) {
+            _tokensOf[from].remove(id);
+        }
+        if (to != address(0)) {
+            _tokensOf[to].add(id);
+        }
     }
 }
