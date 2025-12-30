@@ -7,6 +7,7 @@ import reactLogo from "./public/react.svg";
 
 import { GachaTab } from "./components/gachaTab";
 import { ClaimTab } from "./components/claimTab";
+import { MineTab } from "./components/mineTab";
 import { SendTransaction } from "./components/send-tx";
 import { APITester } from "./components/APITester";
 
@@ -14,7 +15,7 @@ export function App() {
   const [activeTab, setActiveTab] = useState<number>(1);
   // TODO 切换钱包连接，重新渲染全部
   return (
-    <div className="min-h-[800px]  w-5xl">
+    <div className="min-h-[800px] w-5xl">
       <div className="navbar bg-base-100 shadow-sm">
         <div className="navbar-start">
           <h1 className="btn btn-ghost text-xl font-bold my-2 leading-tight">Bun + React + daisyUI</h1>
@@ -59,7 +60,7 @@ export function App() {
           </div>
           <input type="radio" name="my_tabs_1" className="tab" aria-label="Mine" onInput={() => setActiveTab(3)} />
           <div className="tab-content bg-base-100 border-base-300 p-6">
-            {activeTab == 3 && <>Mine</>}
+            {activeTab == 3 && <MineTab />}
           </div>
           <input type="radio" name="my_tabs_1" className="tab" aria-label="Admin" onInput={() => setActiveTab(4)} />
           <div className="tab-content bg-base-100 border-base-300 p-6">
