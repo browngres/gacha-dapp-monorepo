@@ -66,8 +66,9 @@ contract GachaCardNFT is ERC721, Ownable {
     }
 
     /// @notice 读取地址持有的 token 列表
-    function tokensOf(address owner) public view returns (EnumerableSetLib.Uint256Set memory tokens) {
-        return _tokensOf[owner];
+    /// @dev This can consume more gas than the block gas limit for large sets.
+    function tokensOf(address owner) public view returns (uint256[] memory result) {
+        return _tokensOf[owner].values();
     }
 
     /// @dev Hook 函数记录地址的持有 token，方便查询
