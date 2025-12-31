@@ -1,6 +1,6 @@
 import { serve } from "bun"
 import { Database } from "bun:sqlite"
-
+import { join } from "path"
 import index from "../public/index.html"
 import signGacha from "./sign-gacha"
 import { publicClient } from "@/common/config"
@@ -162,6 +162,39 @@ const server = serve({
           },
           { status: 200 },
         )
+      },
+    },
+
+    "/nft/img/*.png": {
+      async GET(req) {
+        // 获取 NFT png
+        console.log("得到一次 GET nft/img/*.png 请求")
+        const path = new URL(req.url)
+        console.log(path.pathname);
+        const id = path.pathname.split('/').pop()?.replace('.png', ''); // 从 url 中取出 id
+        console.log(id);
+
+        const nftPngPath = join(import.meta.dir, `./nft/png/${id}.png`)
+        const file = Bun.file(nftPngPath);
+        if (!(await file.exists())) {
+          return Response.json({ error: "Invalid token Id" }, { status: 400 })
+        }
+        return new Response(await file.bytes());
+      },
+    },
+
+    "/nft/:id": {
+      async GET(req) {
+        // 获取 NFT metadata json
+        console.log("得到一次 GET /nft/:id 请求")
+        const {id} = req.params
+        const nftJsonPath = join(import.meta.dir, `./nft/json/${id}.json`)
+        const file = Bun.file(nftJsonPath)
+
+        if (!(await file.exists())) {
+          return Response.json({ error: "Invalid token Id" }, { status: 400 })
+        }
+        return Response.json(await file.json())
       },
     },
 

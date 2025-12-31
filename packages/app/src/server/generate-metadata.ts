@@ -73,12 +73,14 @@ export default async function generateMetadata(txHash: `0x${string}`): Promise<n
     const rarityCard = ALL_CARDS[nft.rarity]
     const choice = rarityCard[Math.floor(Math.random() * rarityCard.length)]
     // console.log("choice", choice)
+    // console.log("NFT_BASE_URI", NFT_BASE_URI)
 
     // 按照模板生成 metadata json
     const NftJson = TEMPLATE
     NftJson.name = choice.name // name
     NftJson.description = choice.description //description
-    NftJson.image = NFT_BASE_URI + nft.id + ".png" // 图片 url
+    NftJson.image = NFT_BASE_URI + "img/" + nft.id + ".png" // 图片 url
+
     NftJson.external_url = NFT_BASE_URI + nft.id // 以合约的返回为准，没有 ".json" 后缀
     NftJson.attributes[0]!.value = choice.attributes.waifu // Waifu
     NftJson.attributes[1]!.value = choice.attributes.color // Color
