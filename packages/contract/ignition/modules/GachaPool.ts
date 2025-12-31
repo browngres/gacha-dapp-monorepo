@@ -66,8 +66,8 @@ export const gachaPoolModule = buildModule("GachaPoolModule", (m) => {
   m.call(gachaPool, "deployGachaCardNFT", [NFT_NAME, NFT_SYMBOL])
 
   // （可选）设置 NFT URI
-  const NFT_BASE_URI = "https://example.com/nft/"
-  const NFT_CONTRACT_URI = "https://example.com/nft/contract-metadata.json"
+  const NFT_BASE_URI = process.env.NFT_BASE_URI || "https://example.com/nft/"
+  const NFT_CONTRACT_URI = process.env.NFT_CONTRACT_URI || "https://example.com/nft/contract-metadata.json"
   m.call(gachaPool, "setNftUri", [NFT_BASE_URI, NFT_CONTRACT_URI])
 
   return { gachaPool, beacon, proxy }
