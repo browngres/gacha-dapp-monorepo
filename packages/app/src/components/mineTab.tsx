@@ -43,22 +43,40 @@ export function MineTab() {
     },
   });
 
-  const uris = useMemo(() => {
+  // 从 URI 中提取图片过于麻烦。这里直接 URI 映射
+  const pngUris = useMemo(() => {
     if (!urisSuccess || !urisData) return [];
-    return urisData.map((result) => result.result as string);
+    const base = new URL(urisData[0]!.result!).origin;
+    return urisData.map((uri) => {
+      const id = uri.result!.split("/").pop();
+      return base + `/nft/img/${id}.png`;
+    });
   }, [urisData, urisSuccess]);
 
-  // 从 URI 中提取图片过于麻烦。这里直接 URI 映射
-  const imgList = uris.map((uri) => uri + ".png");
+  console.log(pngUris);
+
   // TODO getRarity
   function NftCard() {
     const listItems = tokenIds.map((tokenId, index) => (
       <div key={tokenId} className="card bg-base-100 shadow-sm">
-        <figure className="px-4 pt-4">
-          <div className="mask mask-circle w-24">
-            <img src={imgList[index] || "#"} alt={`NFT ${tokenId}`} />
-          </div>
-        </figure>
+        <div className="hover-3d">
+          <figure className="px-4 pt-4">
+            <div className="mask mask-circle w-24">
+              <img src={pngUris[index] || "#"} alt={`NFT ${tokenId}`} />
+              {/* <img src={"https://www.miladymaker.net/milady/222.png"} alt={`NFT ${tokenId}`} /> */}
+            </div>
+          </figure>
+          {/* 8 empty divs needed for the 3D effect */}
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+
         <div className="card-body items-center text-center p-4">
           <p className="text-sm">Token ID: {tokenId.toString()}</p>
         </div>
