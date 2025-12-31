@@ -1,0 +1,69 @@
+UR:
+  - name: 星空凛
+    description: ねずみ担当だから
+    png_file: UR-001.png
+    attributes:
+      waifu: Rin
+      color: Pink
+  - name: 星空凛
+    description: ぬくぬくにゃ♪
+    png_file: UR-002.png
+    attributes:
+      waifu: Rin
+      color: Blue
+  - name: 桜小路きな子
+    description: 夢へ踏み出す第一歩
+    png_file: UR-003.png
+    attributes:
+      waifu: Kinako
+      color: Pink
+
+SSR:
+  - name: 星空凛
+    description: 緊張するにゃ〜
+    png_file: SSR-001.png
+    attributes:
+      waifu: Rin
+      color: Blue
+
+SR:
+  - name: 桜小路きな子
+    description: 憧れへの第一歩
+    png_file: SR-001.png
+    attributes:
+      waifu: Kinako
+      color: Green
+  - name: 唐可可
+    description: 全人類に届けデス！
+    png_file: SR-002.png
+    attributes:
+      waifu: Keke
+      color: Blue
+
+R:
+  - name: 星空凛
+    description: 434 通常卡
+    png_file: R-001.png
+    attributes:
+      waifu: Rin
+      color: Pink
+  - name: 葉月恋
+    description: 2902 通常卡
+    png_file: R-002.png
+    attributes:
+      waifu: Ren
+      color: Blue
+  - name: 澁谷かのん
+    description: 2893 通常卡
+    png_file: R-003.png
+    attributes:
+      waifu: Kanon
+      color: Green
+
+N:
+  - name: 近江遥
+    description: 2257 活动卡
+    png_file: N-001.png
+    attributes:
+      waifu: Haruka
+      color: Green
