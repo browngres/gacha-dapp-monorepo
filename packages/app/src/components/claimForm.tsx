@@ -28,7 +28,7 @@ export function ClaimForm({ poolId, reqId, setReqId }) {
       const response = await fetch("/api/claimed/", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: user, requestId: Number(reqId) }),
+        body: JSON.stringify({ address: user, requestId: Number(reqId), txHash: ClaimTx.data }),
       });
       if (!response.ok) {
         throw new Error("putClaimed Failed");
@@ -88,7 +88,7 @@ export function ClaimForm({ poolId, reqId, setReqId }) {
 
   // 告诉后端已经 claimed
   const PutClaimedQuery = useQuery({
-    queryKey: ["claimed", poolId, reqId],
+    queryKey: ["claimed", poolId, reqId, ClaimTx.data],
     queryFn: putClaimed,
     staleTime: 2 * 60 * 1000,
     enabled: ClaimTxReceipt.isSuccess,

@@ -6,6 +6,7 @@ import signGacha from "./sign-gacha"
 import { publicClient } from "@/common/config"
 import { ABI, CA } from "@/public/GachaPoolContract"
 import { isAddress } from "viem"
+import generateMetadata from "./generate-metadata"
 // TODO logger
 
 // Initialize database
@@ -99,9 +100,10 @@ const server = serve({
 
     "/api/claimed/": {
       async PUT(req) {
+        // TODO 检查 txHash， reqId 对不对， address 对不对
         // 将 reqId 的 claimed 设置为 true
         console.log("得到一次 PUT claimed 请求")
-        const { address, requestId } = await req.json()
+        const { address, requestId, txHash } = await req.json()
 
         const result = db
           .query("UPDATE requests SET claimed = 1 WHERE requestId = ? AND address = ? RETURNING *")
@@ -114,6 +116,30 @@ const server = serve({
             timestamp: new Date().toISOString(),
           },
           { status: 202 },
+        )
+      },
+    },
+
+    "/api/mint/": {
+      async POST(req) {
+        // TODO 检查 txHash 生成 NFT metadata
+        // 将 reqId 的 claimed 设置为 true
+        console.log("得到一次 POST mint 请求")
+        const { txHash } = await req.json()
+
+        let count = 0
+        try {
+          count = await generateMetadata(txHash)
+        } catch (error) {
+          return Response.json({ error: error }, { status: 400 })
+        }
+        return Response.json(
+          {
+            status: "ok",
+            data: count,
+            timestamp: new Date().toISOString(),
+          },
+          { status: 201 },
         )
       },
     },
