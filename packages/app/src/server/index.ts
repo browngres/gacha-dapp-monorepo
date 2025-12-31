@@ -122,10 +122,13 @@ const server = serve({
 
     "/api/mint/": {
       async POST(req) {
-        // TODO 检查 txHash 生成 NFT metadata
-        // 将 reqId 的 claimed 设置为 true
+        // 检查 txHash 生成 NFT metadata
         console.log("得到一次 POST mint 请求")
         const { txHash } = await req.json()
+
+        if (!txHash) {
+          return Response.json({ error: "No txHash" }, { status: 400 })
+        }
 
         let count = 0
         try {
