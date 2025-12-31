@@ -40,6 +40,25 @@ export function ClaimForm({ poolId, reqId, setReqId }) {
     }
   }
 
+  async function postMint() {
+    // 通知后端已经 Mint，生成 NFT metadata
+    console.log("发出了一次 postMint 请求");
+    try {
+      const response = await fetch("/api/mint/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ txHash: ClaimTx.data }),
+      });
+      if (!response.ok) {
+        throw new Error("postMint Failed");
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("postMint Failed", error);
+      throw new Error("postMint Failed");
+    }
+  }
+
   async function getSignature() {
     // 向后端查询签名
     console.log("发出了一次 getSignature 请求");
@@ -90,6 +109,14 @@ export function ClaimForm({ poolId, reqId, setReqId }) {
   const PutClaimedQuery = useQuery({
     queryKey: ["claimed", poolId, reqId, ClaimTx.data],
     queryFn: putClaimed,
+    staleTime: 2 * 60 * 1000,
+    enabled: ClaimTxReceipt.isSuccess,
+  });
+
+  // 告诉后端生成 NFT metadata
+  const PostMintQuery = useQuery({
+    queryKey: ["postMint", poolId, reqId, ClaimTx.data],
+    queryFn: postMint,
     staleTime: 2 * 60 * 1000,
     enabled: ClaimTxReceipt.isSuccess,
   });
