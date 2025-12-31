@@ -16,7 +16,7 @@ export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId, se
     {
       address: CA,
       abi: ABI,
-      functionName: isTen ? "gachaTen" : "gachaOne",
+      functionName: "gachaOne",
       value: parseUnits("0.1", 18),
     },
   );
@@ -37,7 +37,7 @@ export function GachaStepOne({ isTen, currStep, setCurrStep, reqId, setReqId, se
     try {
       // 模拟单抽交易需要成功
       if (!gacha_simulate.data) {
-        throw new Error("GachaOne Tx simulate failed");
+        throw new BaseError("GachaOne Tx simulate failed");
       }
       // 提交抽卡交易
       await gacha.mutateAsync({
