@@ -6,30 +6,30 @@
 
 ### 项目特色
 
-- bun (Runtime + Package Manager + Bundler)
-- monorepo
-- rainbowkit
-- wagmi 3
-- react + tailwind + daisyui
-- hardhat 3
-- Chainlink VRF
-- ERC721 NFT
-- 由合约创建合约，(solady create3)
+- **bun** (Runtime + Package Manager + Bundler)
+- **monorepo** (app + contract)，前后端不分离
+- **wagmi 3** (all wallet packages are optional)
+- **react** + **tailwind** + **daisyui**
+- **rainbowkit**
+- **hardhat 3**  (using ignition to deploy and test)
+- **Chainlink VRF** (mock coordinator)
+- **ERC721 NFT**
+
 - 部分代码使用 solady 替代 OZ
 
 ### 重点学习（技术难点）
 
-- dapp 前后端
+- dapp 前后端架构
 - hardhat 3 ignition
 - 信标代理
-- 在合约调用其他合约
 - Chainlink VRF
 - 在开发测试中 Mock 合约
 - 不可升级合约的 initializer 改造
-- 可枚举的集合(EnumerableSet)
-- access control roles
-- transient storage (ReentrancyGuardTransient) （仅兼容 Cancun 升级之后的 EVM）
+- 由合约创建合约，(solady create3)
+- 在合约调用其他合约
 - ERC-7201 Namespaced 存储槽
+- 使用集合保存 own NFT tokens
+- 可枚举的集合(EnumerableSet)
 
 ### 仓库架构
 
