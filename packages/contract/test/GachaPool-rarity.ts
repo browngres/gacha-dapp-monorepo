@@ -69,7 +69,7 @@ describe("GachaPool Rarity Unit Tests", function () {
     it("correctly gives rarity UR", testRarity([999099n], [0n]))
   })
 
-  describe("Percentages whit zero in the 1st position", function () {
+  describe("Percentages with zero in the 1st position", function () {
     before("Pause and set percentages [0, 10, 10, 20, 60]", async function () {
       await gachaPool.pause()
       await gachaPool.setPercentage([0, 10, 10, 20, 60])
@@ -86,7 +86,7 @@ describe("GachaPool Rarity Unit Tests", function () {
     it("correctly gives rarity SSR", testRarity([999099n], [1n]))
   })
 
-  describe("Percentages whit zero in the middle", function () {
+  describe("Percentages with zero in the middle", function () {
     before("Pause and set percentages [2, 8, 0, 30, 60]", async function () {
       await gachaPool.pause()
       await gachaPool.setPercentage([2, 8, 0, 30, 60])
@@ -103,7 +103,7 @@ describe("GachaPool Rarity Unit Tests", function () {
     it("correctly gives rarity UR", testRarity([999099n], [0n]))
   })
 
-  describe("Percentages whit zero at the end", function () {
+  describe("Percentages with zero at the end", function () {
     before("Pause and set percentages [2, 8, 0, 90, 0]", async function () {
       await gachaPool.pause()
       await gachaPool.setPercentage([2, 8, 0, 90, 0])
@@ -118,7 +118,7 @@ describe("GachaPool Rarity Unit Tests", function () {
     it("correctly gives rarity UR", testRarity([999099n], [0n]))
   })
 
-  describe("Percentages whit only 100% UR", function () {
+  describe("Percentages with only 100% UR", function () {
     before("Pause and set percentages [100, 0, 0, 0, 0]", async function () {
       await gachaPool.pause()
       await gachaPool.setPercentage([100, 0, 0, 0, 0])
@@ -130,7 +130,7 @@ describe("GachaPool Rarity Unit Tests", function () {
     it("correctly gives rarity UR", testRarity([999099n], [0n]))
   })
 
-  describe("Percentages whit only 100% N", function () {
+  describe("Percentages with only 100% N", function () {
     before("Pause and set percentages [0, 0, 0, 0, 100]", async function () {
       await gachaPool.pause()
       await gachaPool.setPercentage([0, 0, 0, 0, 100])
