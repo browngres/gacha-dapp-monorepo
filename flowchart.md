@@ -58,7 +58,7 @@ sequenceDiagram
     end
 
     rect rgb(255, 245, 238)
-        Note over F,V: 随机数注入（可并行发生）
+        Note over F,V: 随机数 fulfill（可并行发生）
         V-->>F: 3.1 RandomWordsRequested 事件
         F->>V: 3.2 fulfillRandomWordsWithOverride(requestId, 随机数)
         V->>P: 3.3 rawFulfillRandomWords(requestId, 随机数)
@@ -68,10 +68,9 @@ sequenceDiagram
     rect rgb(240, 255, 240)
         Note over U,N: 兑奖阶段
         U->>P: 4.1 调用 claim(requestId, 签名)
-        P->>P: 4.2 验证签名（ecrecover, 检查 requestId、用户、自身地址）
-        P->>P: 4.3 校验随机数已就绪且未铸造
-        P->>N: 4.4 mint(用户地址, tokenId/稀有度)
-        N-->>U: 4.5 铸造 NFT 至用户钱包
+        P->>P: 4.2 检查 requestId（已就绪且未铸造），验证签名（recover），用户地址
+        P->>N: 4.3 mintWithRarity(用户地址, 稀有度)
+        N-->>U: 4.4 铸造 NFT 至用户钱包
     end
 ```
 
