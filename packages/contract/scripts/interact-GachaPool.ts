@@ -3,8 +3,8 @@ import { network } from "hardhat"
 const { ethers } = await network.connect()
 
 async function main() {
-  const gachaPool = await ethers.getContractAt("GachaPool", "0xcE5e33c6f131fAD365Eb9561cC339DFD2a884F16")
-  const vrf = await ethers.getContractAt("VRFCoordinatorV2_5Mock", "0x3E3C3912Fb1a992Ea94e7EC3E5b5D68E2818D858")
+  const gachaPool = await ethers.getContractAt("GachaPool", "0xD6fB9d5EA5A958180f5881e6083ac2738aCa5DEd")
+  const vrf = await ethers.getContractAt("VRFCoordinatorV2_5Mock", "0x589B0D7C9A2Fb128B49d056b603Da5b982387312")
 
   // await gachaPool.pause()
   // await gachaPool.setPercentage([20,20,10,30,20])
@@ -45,6 +45,12 @@ async function main() {
   console.log(reqId)
   */
 
+  // 查看 NFT 地址
+  console.log("GACHA_CARD_NFT ", await gachaPool.GACHA_CARD_NFT())
+  // 设置 NFT URI
+  await gachaPool.setNftUri("http://127.0.0.1:3000/nft/", "http://127.0.0.1:3000/nft/contract-metadata.json")
+  // await gachaPool.setNftUri("https://www.miladymaker.net/milady/json/","https://example.com/")
+
   // 给出指定的随机数
 
   // await vrf.fulfillRandomWordsWithOverride(reqId, gachaPool.target, [99999n])
@@ -66,9 +72,9 @@ async function main() {
   // 检查合约的余额
   // console.log("GachaPool 余额", await ethers.provider.getBalance(gachaPool.target));
   // await gachaPool.withdraw()
+  //
 
-  await gachaPool.claim(1n,"0x")
-
+  // await gachaPool.claim(1n,"0x")
 }
 
 main().catch((error) => {
