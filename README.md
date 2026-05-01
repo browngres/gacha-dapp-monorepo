@@ -4,14 +4,16 @@
 
 作为一个学习 [Patrick 智能合约全栈课程](https://www.youtube.com/watch?v=gyMwXuJrbJQ) 的大作业
 
+仅为测试环境学习，切勿在生产环境使用，未经安全审计。
+
 ### 项目特色
 
 - **bun** (Runtime + Package Manager + Bundler)
 - **monorepo** (app + contract)，前后端不分离
 - **wagmi 3** (all wallet packages are optional)
 - **react** + **tailwind** + **daisyui**
-- **rainbowkit**
-- **hardhat 3**  (using ignition to deploy and test)
+- **rainbowkit** (wallet connect)
+- **hardhat 3** (using ignition to deploy and test)
 - **Chainlink VRF** (mock coordinator)
 - **ERC721 NFT**
 
@@ -33,7 +35,9 @@
 
 ### 仓库架构
 
-合约 [README.md](./packages/contract/README.md)
+合约(contract) [README.md](./packages/contract/README.md)
+后端(app) [README.md](./packages/app/README.md)
+整体设计 [design.md](./design.md)
 
 ### 参考资料
 
