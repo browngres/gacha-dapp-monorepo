@@ -36,7 +36,7 @@
 ### 仓库架构
 
 合约(contract) [README.md](./packages/contract/README.md)
-后端(app) [README.md](./packages/app/README.md)
+前后端(app) [README.md](./packages/app/README.md)
 整体设计 [design.md](./design.md)
 
 ### 参考资料

@@ -32,8 +32,8 @@
 ### 前端
 
 - [x] 基本的前端界面
-- [ ] “我的” NFT 显示面板
-- [ ] NFT hover-3d, indicator(Rarity)
+- [x] “我的” NFT 显示面板
+- [x] NFT hover-3d, indicator(Rarity)
 
 ### 合约
 
