@@ -54,3 +54,37 @@ packages/app/
 └── .env                         # 环境变量
 ```
 
+## 接口说明
+
+#prettierignore
+| 端点 | 功能 | 方法 | 参数 |
+|------|------|------|------|
+| `/api/gacha/` | 签名抽奖请求：接收 `txHash` 和 `pool`，验证是否与链上配置一致，对交易哈希进行签名并记录到数据库。 | POST | **body (JSON):** `pool` (number) – 抽奖池 ID；`txHash` (string) – 链上交易哈希 |
+| `/api/claimed/:address` | 查询指定地址已领取（claimed）的 requestId 列表。 | GET | **路径参数:** `address` (string) – 地址（会被校验是否为合法地址） |
+| `/api/claimed/` | 将某个请求标记为已领取（claimed）。更新数据库中对应 `requestId` 和 `address` 的 `claimed` 字段为 1。 | PUT | **body (JSON):** `address` (string) – 用户地址；`requestId` (string) – 请求 ID；`txHash` (string) – 交易哈希 |
+| `/api/mint/` | 根据交易哈希（`txHash`）生成 NFT 元数据（调用 `generateMetadata`），返回生成的数量。 | POST | **body (JSON):** `txHash` (string) – 链上交易哈希 |
+| `/api/signature/:poolId/:requestId/:address` | 获取指定池、请求ID、地址对应的签名（signature）。 | GET | **路径参数:** `poolId` (number) – 池 ID；`requestId` (string) – 请求 ID；`address` (string) – 用户地址 |
+| `/nft/img/*.png` | 获取 NFT 图片（PNG 格式），路径中最后一段为 token ID（如 `/nft/img/123.png`）。 | GET | **路径参数:** 从 URL 最后一部分提取 token ID（去掉 `.png`） |
+| `/nft/:id` | 获取 NFT 元数据 JSON 文件（如 `/nft/123` 对应 `./nft/json/123.json`）。 | GET | **路径参数:** `id` (string) – token ID |
+
+## NFT meta 生成流程
+
+`ClaimForm` 组件中，`ClaimTxReceipt` 成功后，也就是领取成功后自动调用 `postMint`。这个函数会像后端`/api/mint/`接口发出请求，让后端生成 nft 的 json 等文件。核心是调用 `generate-metadata.ts` 中的 `generateMetadata` 方法来生成文件。
+
+给出 txHash，读取链上 Log，获取 nft 的 id 和稀有度。根据稀有度从预设的 `card.yaml` 中随机挑选一套信息。然后填充 json 模板。复制图片。
+
+card.yaml 中就是预设的 nft 信息。例如：
+
+```yaml
+UR:
+  - name: 星空凛
+    description: ねずみ担当だから
+    png_file: UR-001.png
+    attributes:
+      waifu: Rin
+      color: Pink
+```
+
+其中 `png_file` 字段定义了图片名(位于`packages\app\src\server\nft\assets\png\xxx.jpg`)。
+
+生成时会用这个图片，复制一份(`packages\app\src\server\nft\png\<nft_id>.png`)来作为对应 id 的 nft 的图片。 其他字段可随意设置，只会影响 json 填充。
